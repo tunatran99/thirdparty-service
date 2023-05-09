@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build prod') {
+            steps {
+                script {
+                    dir('__script__/prod') {
+                        sh 'sh run.sh'
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            deleteDir()
+        }
+    }
+}

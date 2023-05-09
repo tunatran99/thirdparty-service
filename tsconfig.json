@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "allowJs": true,
+		"esModuleInterop": true,
+    "removeComments": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@libs/*": ["libs/*"],
+      "@entity/*": ["src/db/entity/*"],
+      "@auth/*": ["src/authentication/*"],
+      "@author/*": ["src/authorization/*"],
+      "@db/*": ["src/db/*"],
+      "@interface/*": ["src/interface/*"],
+      "@intercept/*": ["src/interceptor/*"],
+      "@utils/*": ["src/utils/*"],
+    }
+  }
+}

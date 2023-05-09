@@ -1,0 +1,29 @@
+version: '3.9'
+
+networks:
+  traefik-network:
+    external: true
+
+services:
+  thirdparty-services-prod:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    image: thirdparty-services-prod
+    container_name: thirdparty-services-prod
+    networks:
+      - traefik-network
+    env_file:
+      - .env
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+      - traefik.constraint-label=traefik-public
+      # Middlewares global
+      - traefik.http.middlewares.thirdparty-services-prod-stripprefix.stripprefix.prefixes=/thirdparty-services-prod
+      - traefik.http.middlewares.thirdparty-services-prod-stripprefix.stripprefix.forceSlash=false
+      # Router
+      - traefik.http.routers.thirdparty-services-prod-http.rule=PathPrefix(`/thirdparty-services-prod`)
+      - traefik.http.routers.thirdparty-services-prod-http.entrypoints=http
+      - traefik.http.routers.thirdparty-services-prod-http.middlewares=thirdparty-services-prod-stripprefix
+      - traefik.http.services.thirdparty-services-prod.loadbalancer.server.port=${PORT}

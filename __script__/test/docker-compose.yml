@@ -1,0 +1,32 @@
+version: '3.9'
+
+networks:
+  traefik-network:
+    external: true
+
+services:
+  thirdparty-services-test:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    image: thirdparty-services-test
+    container_name: thirdparty-services-test
+    networks:
+      - traefik-network
+    env_file:
+      - .env
+    volumes:
+      - /datadrive/thirdparty-service/logs:/usr/src/app/logs
+      - /datadrive/thirdparty-service/data:/usr/src/app/data
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+      - traefik.constraint-label=traefik-public
+      # Middlewares global
+      - traefik.http.middlewares.thirdparty-services-test-stripprefix.stripprefix.prefixes=/thirdparty-services-test
+      - traefik.http.middlewares.thirdparty-services-test-stripprefix.stripprefix.forceSlash=false
+      # Router
+      - traefik.http.routers.thirdparty-services-test-http.rule=PathPrefix(`/thirdparty-services-test`)
+      - traefik.http.routers.thirdparty-services-test-http.entrypoints=http
+      - traefik.http.routers.thirdparty-services-test-http.middlewares=thirdparty-services-test-stripprefix
+      - traefik.http.services.thirdparty-services-test.loadbalancer.server.port=${PORT}
