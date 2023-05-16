@@ -9,8 +9,8 @@ export class ShopeefoodController {
 
   @UseGuards(ApiKeyAuthenticationGuard)
   @HttpCode(200)
-  @Post('menu')
-  async getMenu(@Body('restaurant_id') restaurant_id: string): Promise<any> {
+  @Get('menu')
+  async getMenu(): Promise<any> {
     let payload = {
       "merchantID": "GFSBPOS-700-854",
       "partnerMerchantID": "5f30f9b15e87725cdf1f971a",
