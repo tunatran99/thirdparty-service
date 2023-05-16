@@ -67,6 +67,9 @@ class EnvironmentVariables {
   @IsString()
   readonly BOOKINGAPP_APIKEY: string = process.env.BOOKINGAPP_APIKEY as string;
 
+  @IsString()
+  readonly SHOPEEFOOD_APIKEY: string = process.env.SHOPEEFOOD_APIKEY as string;
+  
   @IsNumber()
   readonly API_CHUNK_SIZE: number = Number(process.env.API_CHUNK_SIZE);
 
