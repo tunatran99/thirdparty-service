@@ -6067,7 +6067,7 @@ export class ShopeefoodController {
                               "sequence": 94,
                               "name": "Mì Lasagna đút lò kèm phô mai Mozzarella nhà làm",
                               "availableStatus": "AVAILABLE",
-                              "description": "Thịt bò, thịt heo, xốt Béchamel, xốt cà chua, phô mai Mozzarella",
+                              "description": "Thịt bò, thịt heo, xốt Béchamel, xốt cà chua, phô mai Mozzarellaa",
                               "price": 159840,
                               "photos": [
                                   "https://storage.googleapis.com/delivery-system-v2/02-06-2021%20Image/20200015.png"
