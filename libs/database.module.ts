@@ -30,6 +30,7 @@ import { PricechangeEntity } from 'src/sku/infratsructure/entity/price_change';
 import { GroupPricechangeEntity } from 'src/sku/infratsructure/entity/group_price_change';
 import { StoreEntity } from 'src/sku/infratsructure/entity/store';
 import { LogEntity } from 'src/log/infratsructure/entity/log';
+import { CategoryEntity } from 'src/shopeefood/infratsructure/entity/category';
 
 interface WriteConnection {
   readonly startTransaction: (
@@ -80,6 +81,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       GroupPricechangeEntity,
       StoreEntity,
       LogEntity,
+      CategoryEntity,
     ],
     charset: 'utf8mb4_unicode_ci',
     host: environment.DB_HOST,
