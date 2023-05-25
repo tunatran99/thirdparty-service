@@ -1,6 +1,5 @@
 import { readConnection } from '@libs/database.module';
 import { FindCategoryByCodesResult } from 'src/shopeefood/application/query/find.category.bycodes.result';
-import { SkuEntity } from 'src/sku/infratsructure/entity/sku';
 import { CategoryEntity } from '../entity/category';
 import { CategoryQuery } from './category.query';
 
@@ -24,7 +23,7 @@ export class CategoryQueryImplement implements CategoryQuery {
         )`,
         'items',
       )
-      .where('t1.CATEGORY_NUMBER in (1,2,3,4,5)');
+      .where('t1.CATEGORY_NUMBER in (1,3)');
     const data = await sql.groupBy('t1.CATEGORY_NUMBER').getRawMany();
     return {
       categories: data.map((i) => {
