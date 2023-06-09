@@ -13,89 +13,12 @@ export class ShopeefoodController {
   async getMenu(@Query('partnerMerchantID') id: number): Promise<any> {
     let payload = {
       "merchantID": "GFSBPOS-700-854",
-      "partnerMerchantID": "5f30f9b15e87725cdf1f971a",
-      "currency": {
-          "code": "VND",
-          "symbol": "₫",
-          "exponent": 0
-      },
-      "sections": [
-          {
-              "id": "1008",
-              "name": "Regular Menu",
-              "serviceHours": {
-                  "mon": {
-                      "openPeriodType": "OpenPeriod",
-                      "periods": [
-                          {
-                              "startTime": "10:00",
-                              "endTime": "23:30"
-                          }
-                      ]
-                  },
-                  "tue": {
-                      "openPeriodType": "OpenPeriod",
-                      "periods": [
-                          {
-                              "startTime": "10:00",
-                              "endTime": "23:30"
-                          }
-                      ]
-                  },
-                  "wed": {
-                      "openPeriodType": "OpenPeriod",
-                      "periods": [
-                          {
-                              "startTime": "10:00",
-                              "endTime": "23:30"
-                          }
-                      ]
-                  },
-                  "thu": {
-                      "openPeriodType": "OpenPeriod",
-                      "periods": [
-                          {
-                              "startTime": "10:00",
-                              "endTime": "23:30"
-                          }
-                      ]
-                  },
-                  "fri": {
-                      "openPeriodType": "OpenPeriod",
-                      "periods": [
-                          {
-                              "startTime": "10:00",
-                              "endTime": "23:30"
-                          }
-                      ]
-                  },
-                  "sat": {
-                      "openPeriodType": "OpenPeriod",
-                      "periods": [
-                          {
-                              "startTime": "10:00",
-                              "endTime": "23:30"
-                          }
-                      ]
-                  },
-                  "sun": {
-                      "openPeriodType": "OpenPeriod",
-                      "periods": [
-                          {
-                              "startTime": "10:00",
-                              "endTime": "23:30"
-                          }
-                      ]
-                  }
-              },
-              "categories": {}
-          }
-      ]
+      "partnerMerchantID": `${id}`,
+      "section": {}
   };
 
-  const { categories } = await this.queryBus.execute(new FindCategoryByCodesQuery(id));
-  console.log("cate", categories);
-  payload.sections[0].categories = categories;
+  const { section } = await this.queryBus.execute(new FindCategoryByCodesQuery(id));
+  payload.section = section;
   
     return payload;
   }

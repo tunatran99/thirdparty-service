@@ -12,7 +12,7 @@ export class FindCategoryByCodesQueryHandler implements IQueryHandler<FindCatego
   private readonly categoryQuery: CategoryQueryImplement;
 
   async execute(command: FindCategoryByCodesQuery): Promise<FindCategoryByCodesResult> {
-    const data = await this.categoryQuery.selectSomeRecords(command.id);
+    const data = await this.categoryQuery.selectStoreRecords(command.id);
     return data;
   }
 }

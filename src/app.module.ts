@@ -11,6 +11,7 @@ import { UtilityModule } from '@libs/utility.module';
 import { SkuModule } from './sku/sku.module';
 import { LogModule } from './log/log.module';
 import { ShopeefoodModule } from './shopeefood/shopeefood.module';
+import { DataModule } from './populate/populate.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ShopeefoodModule } from './shopeefood/shopeefood.module';
     LogModule,
     SkuModule,
     ShopeefoodModule,
+    DataModule
   ],
   controllers: [AppController],
   providers: [],

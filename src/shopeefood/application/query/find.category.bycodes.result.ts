@@ -10,14 +10,21 @@ type Item = Readonly<{
   photos: string[],
 }>
 
+type Category = Readonly<{
+  id: string,
+  sequence: number,
+  name: string,
+  availableStatus: string,
+  items: Item[]
+}>
+
 export class FindCategoryByCodesResult implements IQueryResult {
   constructor(
-    readonly categories: Readonly<{
+    readonly section: Readonly<{
       id: string,
-      sequence: number,
       name: string,
-      availableStatus: string,
-      items: Item[]
-    }>[],
+      serviceHours: object,
+      categories: string
+    }>,
   ) { }
 }
