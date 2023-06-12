@@ -126,8 +126,8 @@ export class CategoryQueryImplement implements CategoryQuery {
             sequence: null,
             name: k.name,
             availableStatus: k.availableStatus === 0 ? "AVAILABLE" : "UNAVAILABLE",
-            description: i.description,
-            price: i.price,
+            description: k.description,
+            price: k.price,
             photos: []
           }
         })
