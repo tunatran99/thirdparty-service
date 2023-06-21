@@ -2,6 +2,6 @@ import { FindCategoryByCodesResult } from 'src/shopeefood/application/query/find
 import { CategoryEntity } from '../entity/category';
 
 export interface CategoryQuery {
-  selectStoreRecords: (id: number) => Promise<FindCategoryByCodesResult>;
+  selectStoreRecords: (id: number) => Promise<any>;
   selectCateRecords: (cates: string[]) => Promise<any>;
 }

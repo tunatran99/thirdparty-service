@@ -95,6 +95,10 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     logging: environment.DB_LOGGING,
   });
 
+  getDataSource(): DataSource {
+    return this.dataSource;
+  }
+
   async onModuleInit(): Promise<void> {
     await this.dataSource.initialize();
     if (!this.dataSource.isInitialized) throw new Error('DataSource is not initialized');

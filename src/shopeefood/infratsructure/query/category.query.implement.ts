@@ -3,9 +3,10 @@ import { FindCategoryByCodesResult } from 'src/shopeefood/application/query/find
 import { CategoryEntity } from '../entity/category';
 import { CategoryQuery } from './category.query';
 import { MenuEntity } from 'src/populate/infratsructure/entity/menu';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class CategoryQueryImplement implements CategoryQuery {
-  async selectStoreRecords(id: number): Promise<FindCategoryByCodesResult> {
+  async selectStoreRecords(id: number): Promise<any> {
     let sql = readConnection
       .getRepository(MenuEntity)
       .createQueryBuilder('t1')
@@ -16,8 +17,12 @@ export class CategoryQueryImplement implements CategoryQuery {
         `json_arrayagg(t1.Category_ID)`,
         'cates',
       )
-      .where('t1.storeId in (1001)');
+      .where(`t1.storeId in (${id})`);
     const data = await sql.getRawOne();
+
+    if(!data.cates) {
+      throw new HttpException(`Không tồn tại cửa hàng này`, HttpStatus.BAD_REQUEST)
+    }
 
     const cateData = await this.selectCateRecords(data.cates);
     return {
@@ -100,6 +105,8 @@ export class CategoryQueryImplement implements CategoryQuery {
       .createQueryBuilder('t1')
       .addSelect('t1.Category_ID', 'id')
       .addSelect('t1.Category_Name_Level_2', 'name')
+      .leftJoin('item_sell_price', 't2', 't1.SKU = t2.SKU')
+      .innerJoin('pop_sku_image', 't3', 't1.SKU = t3.skuCode')
       .addSelect(
         `json_arrayagg(
           json_object(
@@ -107,28 +114,31 @@ export class CategoryQueryImplement implements CategoryQuery {
             "name", t1.productName,
             "availableStatus", t1.DELETED,
             "description", t1.description,
-            "price", t1.price
+            "price", t1.price,
+            "photos", t3.filePath
           )
         )`,
         'items',
       )
-      .where(`t1.Category_ID in (${cates.join(', ')})`);
+      .where(`t1.Category_ID in (${cates?.join(', ')})`);
+      console.log(sql.getQuery())
     const data = await sql.groupBy('t1.Category_ID').getRawMany();
-    return data.map(i => {
+    return data.map((i, index) => {
       return {
         id: i.id,
-        sequence: null,
+        sequence: index + 1,
         name: i.name,
-        availableStatus: i.availableStatus ?? null,
-        items: i.items.map(k => {
+        availableStatus: i.availableStatus ?? "UNAVAILABLE",
+        items: i.items.map((k, index) => {
           return {
             id: k.id,
-            sequence: null,
+            sequence: index + 1,
+            sort_type: 1,
             name: k.name,
             availableStatus: k.availableStatus === 0 ? "AVAILABLE" : "UNAVAILABLE",
             description: k.description,
             price: parseInt(k.price),
-            photos: []
+            photos: `http://20.239.69.167/pop-services-test/${k.photos}`
           }
         })
       }
