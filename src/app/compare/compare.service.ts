@@ -384,6 +384,7 @@ export class CompareService {
             }
           }
         }
+        let count = 0;
         for (const pfPrice of pfPrices) {
           if (!wbs[pfPrice.store]) {
             wbs[pfPrice.store] = new ExcelJS.stream.xlsx.WorkbookWriter({
@@ -471,18 +472,13 @@ export class CompareService {
           }
           let shouldCommit = false;
           if (!hasPrice) {
-            console.log(pfPrice.normalPrice)
-            console.log(pfPrice.sku)
-            console.log('Không tìm thấy SKU - khả năng thiếu SKU Master')
+            count+=1;
             let message = 'Không tìm thấy SKU - khả năng thiếu SKU Master';
             if (matchSku) {
-              console.log(pfPrice.sku)
-              console.log('Tìm thấy SKU nhưng ko tìm thấy STORE có giá - khả năng thiếu PC và ISP')
+              count+=1;
               message = 'Tìm thấy SKU nhưng ko tìm thấy STORE có giá - khả năng thiếu PC và ISP';
               if (matchStore) {
-                console.log(pfPrice.sku)
-                console.log(pfPrice.store)
-                console.log('Tìm thấy SKU - STORE nhưng ko áp dụng được giá - khả năng PC chưa đến hạn áp dụng và thiếu ISP')
+                count+=1;
                 message =
                   'Tìm thấy SKU - STORE nhưng ko áp dụng được giá - khả năng PC chưa đến hạn áp dụng và thiếu ISP';
               }
@@ -505,9 +501,7 @@ export class CompareService {
           } else {
             if (p.psNormalPrice === null || p.psNormalPrice === undefined) {
               if (p.psPromoPrice === null || p.psPromoPrice === undefined) {
-                console.log('Không tìm thấy giá (cả normal và promo) của sku-store', p.sku)
-                console.log(p.psNormalPrice)
-                console.log(p.psPromoPrice)
+                count+=1;
                 wsMissDept
                   .addRow([
                     p.store,
@@ -556,6 +550,7 @@ export class CompareService {
               .commit();
           }
         }
+        console.log(count)
       } catch (error) {
         for (const p of pfPrices) {
           console.log('Không tìm thấy dept này trên PS', p.dept)

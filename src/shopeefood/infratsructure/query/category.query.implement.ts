@@ -100,6 +100,7 @@ export class CategoryQueryImplement implements CategoryQuery {
   }
 
   async selectCateRecords(cates: string[]): Promise<any> {
+    let endpoint = 'http://20.239.69.167/pop-services-test/'
     let sql = readConnection
       .getRepository(MenuEntity)
       .createQueryBuilder('t1')
@@ -115,7 +116,8 @@ export class CategoryQueryImplement implements CategoryQuery {
             "availableStatus", t1.DELETED,
             "description", t1.description,
             "price", t1.price,
-            "photos", t3.filePath
+            "filePath", t3.filePath,
+            "filePathThumb", t3.filePathThumb
           )
         )`,
         'items',
@@ -138,7 +140,7 @@ export class CategoryQueryImplement implements CategoryQuery {
             availableStatus: k.availableStatus === 0 ? "AVAILABLE" : "UNAVAILABLE",
             description: k.description,
             price: parseInt(k.price),
-            photos: `http://20.239.69.167/pop-services-test/${k.photos}`
+            photos: [`${endpoint}${k.filePath}`]
           }
         })
       }
