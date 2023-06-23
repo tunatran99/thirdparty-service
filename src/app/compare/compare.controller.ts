@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Get } from '@nestjs/common';
 import { CompareService } from './compare.service';
 
 @Controller('compare')
@@ -15,9 +15,20 @@ export class CompareController {
     const data = await this.compareService.mergePFPrices();
     return data;
   }
-  @Post('exportAllPsPrices')
-  async exportAllPsPrices(@Body('onlyDepts') onlyDepts: string[]) {
-    const data = await this.compareService.exportAllPsPrices(onlyDepts);
+
+  @Get('concat')
+  async concatName() {
+    const data = await this.compareService.concatFileName();
+    return data;
+  }
+  // @Post('exportAllPsPrices')
+  // async exportAllPsPrices(@Body('onlyDepts') onlyDepts: string[]) {
+  //   const data = await this.compareService.exportAllPsPrices(onlyDepts);
+  //   return data;
+  // }
+  @Post('splitPfPrices')
+  async splitPfPrices() {
+    const data = await this.compareService.splitPfPrices();
     return data;
   }
   @Post('comparePrices')
@@ -26,52 +37,52 @@ export class CompareController {
     return data;
   }
 
-  @Post('psPricesByPcNO')
-  async psPricesByPcNO(@Body('pcNO') pcNo: string) {
-    const data = await this.compareService.psPricesByPcNO(pcNo);
-    return data;
-  }
-  @Post('psPricesBySkus')
-  async psPricesBySkus(@Body('skus') skus: string[]) {
-    const data = await this.compareService.psPricesBySkus(skus);
-    return data;
-  }
-
-  @Post('skusHaveImage')
-  async skusHaveImage() {
-    const data = await this.compareService.skusHaveImage();
-    return data;
-  }
-
-  // @Post('insertPsPrices')
-  // async insertPsPrices(@Body('onlyDepts') onlyDepts: string[]) {
-  //   const data = await this.compareService.insertPsPrices(onlyDepts);
-  //   return data;
+  // @Post('all')
+  // async all() {
+  //   await this.compareService.xlsToXlsx();
+  //   await this.compareService.mergePFPrices();
+  //   await this.compareService.comparePrices();
+  //   return;
   // }
 
-  // @Post('setPCDeleted')
-  // async setPCDeleted(@Body('pcNos') pcNos: string[]) {
-  //   const data = await this.compareService.setPCDeleted(pcNos);
-  //   return data;
-  // }
+  //   @Post('psPricesByPcNO')
+  //   async psPricesByPcNO(@Body('pcNO') pcNo: string) {
+  //     const data = await this.compareService.psPricesByPcNO(pcNo);
+  //     return data;
+  //   }
+  //   @Post('psPricesBySkus')
+  //   async psPricesBySkus(@Body('skus') skus: string[]) {
+  //     const data = await this.compareService.psPricesBySkus(skus);
+  //     return data;
+  //   }
 
-  @Post('getReportDept')
-  async getReportDept() {
-    const data = await this.compareService.getReportDept();
-    return data;
-  }
+  //   @Post('skusHaveImage')
+  //   async skusHaveImage() {
+  //     const data = await this.compareService.skusHaveImage();
+  //     return data;
+  //   }
 
-  @Post('reCompareCheckedFiles')
-  async reCompareCheckedFiles() {
-    const data = await this.compareService.reCompareCheckedFiles();
-    return data;
-  }
+  //   @Post('insertPsPrices')
+  //   async insertPsPrices(@Body('onlyDepts') onlyDepts: string[]) {
+  //     const data = await this.compareService.insertPsPrices(onlyDepts);
+  //     return data;
+  //   }
 
-  @Post('all')
-  async all() {
-    await this.compareService.xlsToXlsx();
-    await this.compareService.mergePFPrices();
-    await this.compareService.comparePrices();
-    return;
-  }
+  //   @Post('setPCDeleted')
+  //   async setPCDeleted(@Body('pcNos') pcNos: string[]) {
+  //     const data = await this.compareService.setPCDeleted(pcNos);
+  //     return data;
+  //   }
+
+  //   @Post('getReportDept')
+  //   async getReportDept() {
+  //     const data = await this.compareService.getReportDept();
+  //     return data;
+  //   }
+
+  //   @Post('reCompareCheckedFiles')
+  //   async reCompareCheckedFiles() {
+  //     const data = await this.compareService.reCompareCheckedFiles();
+  //     return data;
+  //   }
 }

@@ -130,7 +130,7 @@ export class CategoryQueryImplement implements CategoryQuery {
         id: i.id,
         sequence: index + 1,
         name: i.name,
-        availableStatus: i.availableStatus ?? "UNAVAILABLE",
+        availableStatus: i.availableStatus ?? "AVAILABLE",
         items: i.items.map((k, index) => {
           return {
             id: k.id,
