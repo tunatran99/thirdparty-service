@@ -137,7 +137,7 @@ export class CategoryQueryImplement implements CategoryQuery {
             sequence: index + 1,
             sort_type: 1,
             name: k.name,
-            availableStatus: k.availableStatus === 0 ? "AVAILABLE" : "UNAVAILABLE",
+            availableStatus: k.availableStatus === 0 ? "AVAILABLE" : "AVAILABLE",
             description: k.description,
             price: parseInt(k.price),
             photos: [`${endpoint}${k.filePath}`]
