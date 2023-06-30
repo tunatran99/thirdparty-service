@@ -25,8 +25,8 @@ export class UpdateAppliedListHandler implements ICommandHandler<UpdateAppliedLi
     if (partnerId === 5) {
       //partner MB App
       console.log('call MB App');
-      const prices = await this.skuPricesQuery.findPricesByCodes([sku], partnerId);
-      return await this.priceService.callMobileApp(prices);
+      // const prices = await this.skuPricesQuery.findPricesByCodes([sku], partnerId);
+      // return await this.priceService.callMobileApp(prices);
     }
   }
 }

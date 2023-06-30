@@ -8,7 +8,7 @@ import { SkuPricesQueryImplement } from 'src/sku/infratsructure/query/sku.prices
 
 @CommandHandler(DownloadPriceToMobile)
 export class DownloadPriceToMobileHandler implements ICommandHandler<DownloadPriceToMobile, void> {
-  constructor(private readonly priceService: PriceService) {}
+  constructor(private readonly priceService: PriceService) { }
 
   @Inject()
   private readonly priceServiceRepo: PriceServiceRepositoryImplement;
@@ -20,7 +20,12 @@ export class DownloadPriceToMobileHandler implements ICommandHandler<DownloadPri
   async execute({ skuCodes }: DownloadPriceToMobile): Promise<any> {
     const { prices } = await this.priceService.calcPrice(skuCodes);
     await this.priceServiceRepo.savePrices(prices);
-    const pricesToSend = await this.skuPricesQuery.findPricesByCodes(skuCodes, 5);
-    return await this.priceService.callMobileApp(pricesToSend);
+    // try {
+    //   const pricesToSend = await this.skuPricesQuery.findPricesByCodes(skuCodes, 5);
+    //   return await this.priceService.callMobileApp(pricesToSend);
+    // }
+    // catch (err) {
+    //   console.log(err);
+    // }
   }
 }

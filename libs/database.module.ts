@@ -31,7 +31,7 @@ import { GroupPricechangeEntity } from 'src/sku/infratsructure/entity/group_pric
 import { StoreEntity } from 'src/sku/infratsructure/entity/store';
 import { LogEntity } from 'src/log/infratsructure/entity/log';
 import { CategoryEntity } from 'src/shopeefood/infratsructure/entity/category';
-import { MenuEntity } from 'src/populate/infratsructure/entity/menu';
+import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
 
 interface WriteConnection {
   readonly startTransaction: (

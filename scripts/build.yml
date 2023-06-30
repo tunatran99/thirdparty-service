@@ -1,0 +1,7 @@
+version: '3.9'
+
+services:
+  service:
+    build:
+      context: ../
+    image: ${REGISTRY_HOST}/${REGISTRY_PUBLISHER}/${PROJECT_NAME}:latest

@@ -11,7 +11,6 @@ import { UtilityModule } from '@libs/utility.module';
 import { SkuModule } from './sku/sku.module';
 import { LogModule } from './log/log.module';
 import { ShopeefoodModule } from './shopeefood/shopeefood.module';
-import { DataModule } from './populate/populate.module';
 import { CompareModule } from './app/compare/compare.module';
 
 @Module({
@@ -29,7 +28,6 @@ import { CompareModule } from './app/compare/compare.module';
     LogModule,
     SkuModule,
     ShopeefoodModule,
-    DataModule,
     CompareModule
   ],
   controllers: [AppController],

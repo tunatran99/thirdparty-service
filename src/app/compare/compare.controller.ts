@@ -15,17 +15,22 @@ export class CompareController {
     const data = await this.compareService.mergePFPrices();
     return data;
   }
+  @Post('mergePSPrices')
+  async mergePSPrices() {
+    const data = await this.compareService.mergePSPrices();
+    return data;
+  }
 
-  @Get('concat')
+  @Get('concatenate')
   async concatName() {
     const data = await this.compareService.concatFileName();
     return data;
   }
-  // @Post('exportAllPsPrices')
-  // async exportAllPsPrices(@Body('onlyDepts') onlyDepts: string[]) {
-  //   const data = await this.compareService.exportAllPsPrices(onlyDepts);
-  //   return data;
-  // }
+  @Post('exportAllPsPrices')
+  async exportAllPsPrices(@Body('onlyDepts') onlyDepts: string[]) {
+    const data = await this.compareService.exportAllPsPrices(onlyDepts);
+    return data;
+  }
   @Post('splitPfPrices')
   async splitPfPrices() {
     const data = await this.compareService.splitPfPrices();
@@ -34,6 +39,12 @@ export class CompareController {
   @Post('comparePrices')
   async comparePrices(@Body('onlyDepts') onlyDepts: string[]) {
     const data = await this.compareService.comparePrices(onlyDepts);
+    return data;
+  }
+
+  @Post('exportPsPrices')
+  async exportPsPrices(@Body('onlyStores') onlyStores: string[]) {
+    const data = await this.compareService.exportPsPricesTable(onlyStores)
     return data;
   }
 
@@ -62,11 +73,11 @@ export class CompareController {
   //     return data;
   //   }
 
-  //   @Post('insertPsPrices')
-  //   async insertPsPrices(@Body('onlyDepts') onlyDepts: string[]) {
-  //     const data = await this.compareService.insertPsPrices(onlyDepts);
-  //     return data;
-  //   }
+    @Post('insertPsPrices')
+    async insertPsPrices(@Body('onlyDepts') onlyDepts: string[]) {
+      const data = await this.compareService.insertPsPrices(onlyDepts);
+      return data;
+    }
 
   //   @Post('setPCDeleted')
   //   async setPCDeleted(@Body('pcNos') pcNos: string[]) {

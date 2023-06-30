@@ -21,7 +21,7 @@ export class CronUpdatePriceHandler implements ICommandHandler<CronUpdatePrice, 
       const tomorrowSkus = tomorrowPcs.map((i) => i.SKU);
       const { prices } = await this.priceService.calcPrice(tomorrowSkus, tomorrowDate);
       await this.priceServiceRepo.savePrices(prices);
-      await this.priceService.callMobileApp(prices);
+      // await this.priceService.callMobileApp(prices);
     }
   }
 }

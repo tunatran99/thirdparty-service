@@ -1,9 +1,10 @@
 import { Logger, Module } from '@nestjs/common';
 import { CompareController } from './compare.controller';
 import { CompareService } from './compare.service';
+import { SkuModule } from 'src/sku/sku.module';
 
 @Module({
-  imports: [],
+  imports: [SkuModule],
   controllers: [CompareController],
   providers: [Logger, CompareService],
 })

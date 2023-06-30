@@ -32,5 +32,6 @@ const domain = [PriceService];
   imports: [CqrsModule, LogModule],
   controllers: [SkuController],
   providers: [Logger, ...infrastructure, ...application, ...domain],
+  exports: [PriceService, PriceServiceRepositoryImplement]
 })
 export class SkuModule {}
