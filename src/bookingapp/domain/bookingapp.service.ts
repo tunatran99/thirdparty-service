@@ -14,7 +14,8 @@ export class BookingappService {
       const chunks = _.chunk(sendData, environment.API_CHUNK_SIZE);
       for (const [index, chunk] of chunks.entries()) {
         this.logger.log(`Calling: ${donwloadMobileLink} | ${index + 1}/${chunks.length} chunks`);
-        await got
+        try {
+          await got
           .post(donwloadMobileLink, {
             headers: {
               'x-api-key': donwloadMobileKEY,
@@ -22,6 +23,10 @@ export class BookingappService {
             json: chunk,
           })
           .json();
+        }
+        catch (e) {
+          this.logger.log(e.respone?.body)
+        }
       }
     } else {
       return sendData;

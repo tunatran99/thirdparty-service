@@ -23,6 +23,10 @@ export class CompareService {
 
   constructor(private readonly priceService: PriceService) {}
 
+  // async testFunction() {
+  //   const { prices, errors } = await this.priceService.calcPrice(['06254179']);
+  // }
+
   async xlsToXlsx() {
     const storeFolders = await fs.readdir(`src/pfprices/xls`);
     for (const storeFolder of storeFolders) {
@@ -735,6 +739,7 @@ export class CompareService {
     const uniqDepts = _.uniq(skus.map((i) => i.DEPT_ID));
     console.log("Part: Tính lại giá")
     for (const dept of uniqDepts) {
+      console.log(dept)
       const deptSkus = skus.filter((i) => i.DEPT_ID === dept);
       const { prices, errors } = await this.priceService.calcPrice(deptSkus.map((i) => i.SKU_CODE));
       // await this.priceServiceRepo.savePrices(prices)

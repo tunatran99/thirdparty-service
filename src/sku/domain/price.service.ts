@@ -131,6 +131,7 @@ export class PriceService {
 
       //Ghép các data đã truy vấn
       for (const sku of skus) {
+        // if(sku.ITEM_SELL_PRICE) console.log(sku.ITEM_SELL_PRICE)
         sku.itemSellPrices = [];
         sku.pricechanges = [];
         for (const ispItem of isps) {
@@ -422,7 +423,8 @@ export class PriceService {
             //Lọc items_sell_prices theo store
             const isp = itemsellprices.find((i) => i.STORE === psPrice.store);
             if (isp) {
-              psPrice.normalPrice = isp.CURRENT_PRICE;
+              // psPrice.normalPrice = isp.CURRENT_PRICE;
+              psPrice.normalPrice = isp.CURRENT_PRICE
               psPrice.priceFrom = 'itemsellprice';
 
               //Lấy grouppricechane có store, category phù hợp và startdate nhỏ hơn hoặc bằng ngày hiện tại

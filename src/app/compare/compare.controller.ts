@@ -5,6 +5,10 @@ import { CompareService } from './compare.service';
 export class CompareController {
   constructor(private readonly compareService: CompareService) {}
 
+  // @Get('testCalc')
+  // async testCalc() {
+  //   await this.compareService.testFunction();
+  // }
   @Post('xlsToXlsx')
   async xlsToXlsx() {
     const data = await this.compareService.xlsToXlsx();

@@ -26,9 +26,7 @@ export class CreateCategoryHandler implements ICommandHandler<CreateCategory, nu
       const entities = excelData.map((item) => {
         const entity = new CategoryEntity();
         entity.CATEGORY_CODE = item.CATEGORY_CODE;
-        entity.CATEGORY_NAME = item.CATEGORY_NAME;
         entity.SEQUENCE = item.SEQUENCE;
-        entity.STATUS = item.STATUS;
         return entity;
       });
 

@@ -123,20 +123,21 @@ export class CategoryQueryImplement implements CategoryQuery {
       .addSelect('t1.CATEGORY', 'id')
       .addSelect('t2.CATEGORY_NAME', 'name')
       .addSelect('t2.STATUS', 'availableStatus')
-      .addSelect('t2.SEQUENCE', 'sequence')
-      .leftJoin('spf_category', 't2', 't1.CATEGORY = t2.CATEGORY_CODE')
-      .innerJoin('sku', 't3', 't1.SKU = t3.SKU_CODE')
-      .innerJoin('ps_price', 't4', '(t1.SKU = t4.sku and t1.STORE = t4.store)')
+      .addSelect('t3.SEQUENCE', 'sequence')
+      .leftJoin('category', 't2', 't1.CATEGORY = t2.CATEGORY_CODE')
+      .leftJoin('category_sequence', 't3', 't1.CATEGORY = t3.CATEGORY_CODE')
+      .innerJoin('sku', 't4', 't1.SKU = t4.SKU_CODE')
+      .innerJoin('ps_price', 't5', '(t1.SKU = t5.sku and t1.STORE = t5.store)')
       .addSelect(
         `json_arrayagg(
           json_object(
             "id", t1.SKU,
-            "name", t3.ITEM_DESC_VNM,
+            "name", t4.ITEM_DESC_VNM,
             "availableStatus", t1.STATUS,
             "sequence", t1.SEQUENCE,
             "description", t1.description,
-            "promoPrice", t4.promoPrice,
-            "normalPrice", t4.normalPrice,
+            "promoPrice", t5.promoPrice,
+            "normalPrice", t5.normalPrice,
             "filePath", t1.SKU_IMAGE
           )
         )`,
@@ -150,7 +151,7 @@ export class CategoryQueryImplement implements CategoryQuery {
         id: i.id,
         sequence: i.sequence,
         name: i.name,
-        availableStatus: i.availableStatus ?? "AVAILABLE",
+        availableStatus: i.availableStatus === 0 ? "AVAILABLE" : "UNAVAILABLE",
         items: i.items.map((k, index) => {
           return {
             id: k.id,

@@ -2,16 +2,12 @@
 export type CategoryProperties = Readonly<
   Required<{
     CATEGORY_CODE: string;
-    CATEGORY_NAME: string;
-    STATUS: number;
     SEQUENCE: number;
   }>
 >;
 
 export interface ICategory {
     CATEGORY_CODE: string;
-    CATEGORY_NAME: string;
-    STATUS: number;
     SEQUENCE: number;
   create: () => void;
   commit: () => void;

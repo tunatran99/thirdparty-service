@@ -5,7 +5,18 @@ import { POQuery } from './po.query';
 import moment from 'moment';
 
 export class POQueryImplement implements POQuery {
+  // async findAllCodes(): Promise<any> {
+  //   let sql = readConnection
+  //     .getRepository(PurchaseOrderEntity)
+  //     .createQueryBuilder('t1')
+  //     .select('distinct t1.ORDER_NO', 'purchase_code')
+
+  //     const data = await sql.getRawMany();
+
+  //     return data;
+  // }
   async findByCodes(codes: string[]): Promise<FindPOByCodesResult> {
+    // console.log("Querying...")
     let sql = readConnection
       .getRepository(PurchaseOrderEntity)
       .createQueryBuilder('t1')
