@@ -122,9 +122,9 @@ export class CategoryQueryImplement implements CategoryQuery {
       .createQueryBuilder('t1')
       .addSelect('t1.CATEGORY', 'id')
       .addSelect('t2.CATEGORY_NAME', 'name')
-      .addSelect('t2.STATUS', 'availableStatus')
+      .addSelect('t2.DELETED', 'availableStatus')
       .addSelect('t3.SEQUENCE', 'sequence')
-      .leftJoin('category', 't2', 't1.CATEGORY = t2.CATEGORY_CODE')
+      .leftJoin('category', 't2', 't1.CATEGORY = t2.CATEGORY_ID')
       .leftJoin('category_sequence', 't3', 't1.CATEGORY = t3.CATEGORY_CODE')
       .innerJoin('sku', 't4', 't1.SKU = t4.SKU_CODE')
       .innerJoin('ps_price', 't5', '(t1.SKU = t5.sku and t1.STORE = t5.store)')
@@ -144,14 +144,14 @@ export class CategoryQueryImplement implements CategoryQuery {
         'items',
       )
       .where(`t1.CATEGORY in (${cates?.join(', ')}) and t1.STORE in (${store})`);
-      console.log(sql.groupBy('t1.CATEGORY').getQuery());
+      // console.log(sql.groupBy('t1.CATEGORY').getQuery());
     const data = await sql.groupBy('t1.CATEGORY').getRawMany();
     return data.map((i, index) => {
       return {
         id: i.id,
         sequence: i.sequence,
         name: i.name,
-        availableStatus: i.availableStatus === 0 ? "AVAILABLE" : "UNAVAILABLE",
+        availableStatus: i.availableStatus === 'Y' ? "AVAILABLE" : "UNAVAILABLE",
         items: i.items.map((k, index) => {
           return {
             id: k.id,
