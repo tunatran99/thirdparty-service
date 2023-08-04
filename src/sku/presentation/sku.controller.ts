@@ -17,13 +17,14 @@ import { FindSkuPriceDetailRequestDTO } from './dto/find.sku.price.detail.reques
 import { FindSkuPricesRequestDTO } from './dto/find.sku.prices.request.dto';
 import { UpdateAppliedListRequestDTO } from './dto/update.applied.list.request.dto';
 import { A3PLogInterceptor } from 'libs/a3p.log.interceptor';
+import { NewCronUpdatePrice } from '../application/command/new.cron.update.price';
 
 @Controller('sku')
 export class SkuController {
   constructor(readonly commandBus: CommandBus, readonly queryBus: QueryBus) {}
 
   @UseGuards(ApiKeyAuthenticationGuard)
-  @UseInterceptors(A3PLogInterceptor)
+  // @UseInterceptors(A3PLogInterceptor)
   @HttpCode(200)
   @Post('getbycodes')
   async findSkuByCodes(
@@ -47,6 +48,27 @@ export class SkuController {
   async updatePricesCronjob(): Promise<void> {
     return await this.commandBus.execute(new CronUpdatePrice());
   }
+  // @HttpCode(200)
+  // @Post('tmr_manual')
+  // async updatePricesCronjob(): Promise<void> {
+  //   return await this.commandBus.execute(new CronUpdatePrice());
+  // }
+
+  // @Cron('0 0 21 * * *', {
+  //   timeZone: 'Asia/Ho_Chi_Minh',
+  // }) // 09:00 PM
+  // @UseGuards(ApiKeyAuthenticationGuard)
+  @UseInterceptors(A3PLogInterceptor)
+  @HttpCode(200)
+  @Post('update_amendsku_price')
+  async updatePricesNewSKUCronjob(): Promise<void> {
+    return await this.commandBus.execute(new NewCronUpdatePrice());
+  }
+
+  // @Post('testCron')
+  // async testUpdatePricesCronjob(): Promise<void> {
+  //   return await this.commandBus.execute(new CronUpdatePrice());
+  // }
 
   @UseGuards(JwtAuthenticationGuard)
   @Get('listskubypartner')

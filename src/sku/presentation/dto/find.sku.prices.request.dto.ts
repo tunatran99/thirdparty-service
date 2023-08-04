@@ -1,9 +1,10 @@
-import { IsArray, IsString, ArrayMinSize, IsNotEmpty } from 'class-validator';
+import { IsArray, IsString, ArrayMinSize, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class FindSkuPricesRequestDTO {
+  @IsOptional()
   @IsArray()
-  @ArrayMinSize(1)
+  @ArrayMinSize(0)
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
-  readonly skus: string[];
+  readonly skus?: string[];
 }

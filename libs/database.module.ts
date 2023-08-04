@@ -30,8 +30,10 @@ import { PricechangeEntity } from 'src/sku/infratsructure/entity/price_change';
 import { GroupPricechangeEntity } from 'src/sku/infratsructure/entity/group_price_change';
 import { StoreEntity } from 'src/sku/infratsructure/entity/store';
 import { LogEntity } from 'src/log/infratsructure/entity/log';
-import { CategoryEntity } from 'src/shopeefood/infratsructure/entity/category';
+import { CategoryEntity } from 'src/bookingapp/infratsructure/entity/category';
+import { CategoryEntity as CategorySequenceEntity } from 'src/shopeefood/infratsructure/entity/category';
 import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
+import { GroupEntity } from 'src/bookingapp/infratsructure/entity/group';
 
 interface WriteConnection {
   readonly startTransaction: (
@@ -83,7 +85,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       StoreEntity,
       LogEntity,
       CategoryEntity,
-      MenuEntity
+      CategorySequenceEntity,
+      MenuEntity,
+      GroupEntity
     ],
     charset: 'utf8mb4_unicode_ci',
     host: environment.DB_HOST,

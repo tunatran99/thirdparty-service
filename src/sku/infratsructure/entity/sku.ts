@@ -64,8 +64,8 @@ export class SkuEntity {
   SELLING_POINT4: string;
   @Column()
   SELLING_POINT5: string;
-  // @Column({ nullable: true })
-  // ITEM_SELL_PRICE?: string;
+  @Column({ nullable: true })
+  ITEM_SELL_PRICE?: string;
   @Column()
   RETAIL_UOM: string;
   @Column()

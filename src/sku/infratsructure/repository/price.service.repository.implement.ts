@@ -7,10 +7,21 @@ import { PricechangeEntity } from '../entity/price_change';
 import { SkuEntity } from '../entity/sku';
 import { UomEntity } from '../entity/uom';
 import { PriceServiceRepository } from './price.service.repository';
+import { StoreEntity } from '../entity/store';
 
 export class PriceServiceRepositoryImplement implements PriceServiceRepository {
   async findUom(): Promise<UomEntity[]> {
     return await readConnection.getRepository(UomEntity).createQueryBuilder('t1').getMany();
+  }
+
+  async findStore(): Promise<StoreEntity[]> {
+    return await readConnection.getRepository(StoreEntity).createQueryBuilder('t1').getMany();
+  }
+
+  async findLatestSku(date: string): Promise<SkuEntity[]> {
+    let sql = readConnection.getRepository(SkuEntity).createQueryBuilder('t1')
+    .where('t1.MODIFIED_DATE = :date', { date });
+    return await sql.getMany();
   }
 
   async findAndCountSku(skus?: string[]): Promise<SkuEntity[]> {

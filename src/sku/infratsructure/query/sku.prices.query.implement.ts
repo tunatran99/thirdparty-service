@@ -6,6 +6,10 @@ import { SkuPricesQuery } from './sku.prices.query';
 import { FindSkuPricesByPartnerResult } from 'src/sku/application/query/find.sku.prices.bypartner.result';
 import { PartnerEntity } from 'src/partner/infratsructure/entity/partner';
 import { StoreEntity } from '../entity/store';
+import { LineEntity } from 'src/bookingapp/infratsructure/entity/line';
+import { GroupEntity } from 'src/bookingapp/infratsructure/entity/group';
+import { DepartmentEntity } from 'src/bookingapp/infratsructure/entity/department';
+import { CategoryEntity } from 'src/bookingapp/infratsructure/entity/category';
 
 export class SkuPricesQueryImplement implements SkuPricesQuery {
   async findPricesByCodes(codes: string[], partnerId: number): Promise<PriceEntity[]> {
@@ -38,6 +42,10 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     partnerId: number,
     search?: string,
     storeId?: string,
+    lineId?: string,
+    groupId?: string,
+    deptId?: string,
+    cateId?: string
   ): Promise<FindSkuPricesByPartnerResult> {
     let sql = readConnection
       .getRepository(SkuEntity)
@@ -63,6 +71,66 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       .where('t3.partnerId = :partnerId', { partnerId });
     if (storeId) {
       sql = sql.andWhere('t2.store = :storeId', { storeId });
+    } else {
+      sql = sql.select(
+        `
+      ANY_VALUE(t1.SKU_ID) as id,
+      ANY_VALUE(t1.SKU_CODE) as sku,
+      ANY_VALUE(t1.ITEM_DESC_VNM) as "nameEn",
+      ANY_VALUE(t1.POP2_DESC_VNM) as "nameVn",
+      ANY_VALUE(t1.RETAIL_UOM) as "uomEn",
+      ANY_VALUE(t1.POP3_DESC_VNM) as "uomVn"
+        `,
+      );
+      sql = sql.groupBy('t1.SKU_CODE');
+    }
+    if (lineId) {
+      sql = sql.andWhere('t2.line = :lineId', { lineId });
+    } else {
+      sql = sql.select(
+        `
+      ANY_VALUE(t1.SKU_ID) as id,
+      ANY_VALUE(t1.SKU_CODE) as sku,
+      ANY_VALUE(t1.ITEM_DESC_VNM) as "nameEn",
+      ANY_VALUE(t1.POP2_DESC_VNM) as "nameVn",
+      ANY_VALUE(t1.RETAIL_UOM) as "uomEn",
+      ANY_VALUE(t1.POP3_DESC_VNM) as "uomVn"
+        `,
+      );
+      sql = sql.groupBy('t1.SKU_CODE');
+    }
+    if (groupId) {
+      sql = sql.andWhere('t2.group = :groupId', { groupId });
+    } else {
+      sql = sql.select(
+        `
+      ANY_VALUE(t1.SKU_ID) as id,
+      ANY_VALUE(t1.SKU_CODE) as sku,
+      ANY_VALUE(t1.ITEM_DESC_VNM) as "nameEn",
+      ANY_VALUE(t1.POP2_DESC_VNM) as "nameVn",
+      ANY_VALUE(t1.RETAIL_UOM) as "uomEn",
+      ANY_VALUE(t1.POP3_DESC_VNM) as "uomVn"
+        `,
+      );
+      sql = sql.groupBy('t1.SKU_CODE');
+    }
+    if (deptId) {
+      sql = sql.andWhere('t2.dept = :deptId', { deptId });
+    } else {
+      sql = sql.select(
+        `
+      ANY_VALUE(t1.SKU_ID) as id,
+      ANY_VALUE(t1.SKU_CODE) as sku,
+      ANY_VALUE(t1.ITEM_DESC_VNM) as "nameEn",
+      ANY_VALUE(t1.POP2_DESC_VNM) as "nameVn",
+      ANY_VALUE(t1.RETAIL_UOM) as "uomEn",
+      ANY_VALUE(t1.POP3_DESC_VNM) as "uomVn"
+        `,
+      );
+      sql = sql.groupBy('t1.SKU_CODE');
+    }
+    if (cateId) {
+      sql = sql.andWhere('t2.category = :cateId', { cateId });
     } else {
       sql = sql.select(
         `
@@ -104,13 +172,24 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     };
   }
 
-  async findFilterInfo(): Promise<{ partners: PartnerEntity[]; stores: StoreEntity[] }> {
+  async findFilterInfo(): Promise<{ partners: PartnerEntity[]; stores: StoreEntity[]; 
+    lines: LineEntity[]; groups: GroupEntity[]; depts: DepartmentEntity[]; cates: CategoryEntity[] }> {
     const partnerSql = readConnection.getRepository(PartnerEntity).createQueryBuilder('t1').getMany();
     const storeSql = readConnection.getRepository(StoreEntity).createQueryBuilder('t1').getMany();
-    const [partners, stores] = await Promise.all([partnerSql, storeSql]);
+    const lineSql = readConnection.getRepository(LineEntity).createQueryBuilder('t1').getMany();
+    const groupSql = readConnection.getRepository(GroupEntity).createQueryBuilder('t1').getMany();
+    const deptSql = readConnection.getRepository(DepartmentEntity).createQueryBuilder('t1').getMany();
+    const cateSql = readConnection.getRepository(CategoryEntity).createQueryBuilder('t1').getMany();
+    const [partners, stores, lines, groups, depts, cates] = await Promise.all([
+      partnerSql, storeSql, lineSql, groupSql, deptSql, cateSql
+    ]);
     return {
       partners,
       stores,
+      lines, 
+      groups, 
+      depts, 
+      cates
     };
   }
 

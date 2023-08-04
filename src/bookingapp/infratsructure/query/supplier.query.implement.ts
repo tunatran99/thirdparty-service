@@ -28,7 +28,7 @@ export class SupplierQueryImplement implements SupplierQuery {
     if (codes && codes.length > 0) {
       sql = sql.where('t1.SUPPLIER_CODE IN (:...codes)', { codes });
     }
-    const data = await sql.groupBy('t1.SUPPLIER_CODE').distinctOn(['t1.SUPPLIER_CODE', 't2.BRANCH_CODE']).getRawMany();
+    const data = await sql.groupBy('t1.SUPPLIER_CODE').distinctOn(['t1.SUPPLIER_CODE', 't2.BRANCH_CODE']).maxExecutionTime(10000).getRawMany();
     return {
       items: data.map((i) => {
         return {

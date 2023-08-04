@@ -21,7 +21,20 @@ export class A3PLogInterceptor implements NestInterceptor {
         const requestBody = request.body ? JSON.stringify(request.body) : undefined;
         const responseBody = data ? JSON.stringify(data) : undefined;
 
-        this.logger.customLog({
+        // this.logger.customLog({
+        //   url: request.url,
+        //   method: request.method,
+        //   ip: request.clientIp,
+        //   isSystemCall,
+        //   partnerId,
+        //   statusCode,
+        //   isFailed,
+        //   requestHeader,
+        //   requestBody,
+        //   responseBody,
+        // });
+
+        this.logger.log({
           url: request.url,
           method: request.method,
           ip: request.clientIp,
@@ -32,7 +45,7 @@ export class A3PLogInterceptor implements NestInterceptor {
           requestHeader,
           requestBody,
           responseBody,
-        });
+        })
 
         return data;
       }),

@@ -10,11 +10,15 @@ export class FindFilterInfoQueryHandler implements IQueryHandler<FindFilterInfoQ
   private readonly skuPricesQuery: SkuPricesQueryImplement;
 
   async execute(): Promise<FindFilterInfoResult> {
-    const { partners, stores } = await this.skuPricesQuery.findFilterInfo();
+    const { partners, stores, lines, groups, depts, cates } = await this.skuPricesQuery.findFilterInfo();
 
     return {
       partners,
       stores,
+      lines,
+      groups,
+      depts,
+      cates
     };
   }
 }

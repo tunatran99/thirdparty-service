@@ -1,21 +1,21 @@
 import { EventBus, IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { FindPOByCodesQuery } from '../query/find.po.bycodes.query';
+import { FindPOByCodesScheduleQuery } from '../query/find.po.bycodes.schedule.query';
 import { Inject } from '@nestjs/common';
 import { POQueryImplement } from 'src/bookingapp/infratsructure/query/po.query.implement';
 import { POFoundByCodesEvent } from '../event/po.found.bycodes';
 import { PriceServiceRepositoryImplement } from 'src/sku/infratsructure/repository/price.service.repository.implement';
 import _ from 'lodash';
 
-@QueryHandler(FindPOByCodesQuery)
-export class FindPOByCodesQueryHandler implements IQueryHandler<FindPOByCodesQuery, void> {
+@QueryHandler(FindPOByCodesScheduleQuery)
+export class FindPOByCodesScheduleQueryHandler implements IQueryHandler<FindPOByCodesScheduleQuery, void> {
   constructor(readonly eventBus: EventBus) { }
 
   @Inject()
   private readonly poQuery: POQueryImplement;
 
-  async execute(command: FindPOByCodesQuery): Promise<void> {
-    // let poCodes = await this.poQuery.findAllCodes()
-    // poCodes = poCodes.map(po => po.purchase_code)
+  async execute(command: FindPOByCodesScheduleQuery): Promise<void> {
+    let poCodes = await this.poQuery.findAllCodes()
+    poCodes = poCodes.map(po => po.purchase_code)
     // const chunks = _.chunk(poCodes, 2000);
     // console.log(chunks.length)
 
@@ -25,11 +25,13 @@ export class FindPOByCodesQueryHandler implements IQueryHandler<FindPOByCodesQue
     //   //   const data = await this.poQuery.findByCodes(chunk as string[]);
     //   //   this.eventBus.publish(new POFoundByCodesEvent(data));
     //   // }
-    //   const data = await this.poQuery.findByCodes(chunk as string[]);
+    //   const data = await this.poQuery.findByCodesSchedule(chunk as string[]);
     //   this.eventBus.publish(new POFoundByCodesEvent(data));
     //   console.log(`done + ${chunkIndex}`)
     // }
-    const data = await this.poQuery.findByCodes(command.codes);
+    console.log("query")
+    const data = await this.poQuery.findByCodes(poCodes);
+    console.log("Publish")
     this.eventBus.publish(new POFoundByCodesEvent(data));
   }
 }

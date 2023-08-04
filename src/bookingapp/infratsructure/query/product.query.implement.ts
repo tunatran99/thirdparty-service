@@ -9,7 +9,7 @@ export class ProductQueryImplement implements ProductQuery {
     if (codes && codes.length > 0) {
       sql = sql.where('t1.SKU_CODE IN (:...codes)', { codes });
     }
-    const data = await sql.getMany();
+    const data = await sql.maxExecutionTime(40000).getMany();
     return {
       items: data.map((i) => {
         return {

@@ -38,3 +38,9 @@ lerna-debug.log*
 *prices
 
 /data
+
+/src/newsku/
+/src/pfprices/
+/src/psprices/
+/src/ps_xlsx/
+/src/remain/

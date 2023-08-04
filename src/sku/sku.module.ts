@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Logger, Module, forwardRef } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { LogModule } from 'src/log/log.module';
 import { DownloadPriceToMobileHandler } from './application/command-handler/download.price.to.mobile.handler';
@@ -13,6 +13,9 @@ import { SkuPricesQueryImplement } from './infratsructure/query/sku.prices.query
 import { PartnerPricesRepositoryImplement } from './infratsructure/repository/partner.prices.repository.implement';
 import { PriceServiceRepositoryImplement } from './infratsructure/repository/price.service.repository.implement';
 import { SkuController } from './presentation/sku.controller';
+import { CronUpdatePriceHandler } from './application/command-handler/cron.update.price.handler';
+import { CompareModule } from 'src/app/compare/compare.module';
+import { NewCronUpdatePriceHandler } from './application/command-handler/new.cron.update.price.handler';
 
 const infrastructure = [SkuPricesQueryImplement, PartnerPricesRepositoryImplement, PriceServiceRepositoryImplement];
 
@@ -24,12 +27,14 @@ const application = [
   FindFilterInfoQueryHandler,
   FindSkuPricesDetailQueryHandler,
   UpdateAppliedListHandler,
+  CronUpdatePriceHandler,
+  NewCronUpdatePriceHandler
 ];
 
 const domain = [PriceService];
 
 @Module({
-  imports: [CqrsModule, LogModule],
+  imports: [CqrsModule, LogModule, forwardRef(() => CompareModule)],
   controllers: [SkuController],
   providers: [Logger, ...infrastructure, ...application, ...domain],
   exports: [PriceService, PriceServiceRepositoryImplement]

@@ -19,7 +19,7 @@ export class CategoryQueryImplement implements CategoryQuery {
     const data = await sql.getRawOne();
 
     if(!data.cates) {
-      throw new HttpException(`Không tồn tại cửa hàng này`, HttpStatus.BAD_REQUEST)
+      throw new HttpException({ message: `Không tồn tại cửa hàng này` }, HttpStatus.BAD_REQUEST)
     }
 
     const cates = data.cates.filter((i, index) => data.cates[index] != data.cates[index+1])

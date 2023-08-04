@@ -18,6 +18,10 @@ export class FindSkuPricesByPartnerQueryHandler
       data.partnerId,
       data.search,
       data.storeId,
+      data.lineId,
+      data.groupId,
+      data.deptId,
+      data.cateId
     );
 
     return {

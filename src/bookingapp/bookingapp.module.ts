@@ -22,6 +22,7 @@ import { POQueryImplement } from './infratsructure/query/po.query.implement';
 import { ProductQueryImplement } from './infratsructure/query/product.query.implement';
 import { SupplierQueryImplement } from './infratsructure/query/supplier.query.implement';
 import { BookingappController } from './presentation/bookingapp.controller';
+import { FindPOByCodesScheduleQueryHandler } from './application/query-handler/find.po.bycodes.schedule.handler';
 
 const infrastructure = [
   SupplierQueryImplement,
@@ -37,6 +38,7 @@ const application = [
   FindDepartmentByCodesQueryHandler,
   FindProductByCodesQueryHandler,
   FindPOByCodesQueryHandler,
+  FindPOByCodesScheduleQueryHandler,
   SupplierCallBAEventHandler,
   LineCallBAEventHandler,
   DepartmentCallBAEventHandler,
@@ -46,7 +48,7 @@ const application = [
   LineWriteFileEventHandler,
   DepartmentWriteFileEventHandler,
   ProductWriteFileEventHandler,
-  POWriteFileEventHandler,
+  POWriteFileEventHandler
 ];
 
 const domain = [BookingappService];

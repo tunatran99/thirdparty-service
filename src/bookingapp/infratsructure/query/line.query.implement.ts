@@ -9,7 +9,7 @@ export class LineQueryImplement implements LineQuery {
     if (codes && codes.length > 0) {
       sql = sql.where('t1.LINE_ID IN (:...codes)', { codes });
     }
-    const data = await sql.getMany();
+    const data = await sql.maxExecutionTime(5000).getMany();
     return {
       items: data.map((i) => {
         return {
