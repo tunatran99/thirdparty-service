@@ -58,12 +58,12 @@ export class SkuController {
   //   timeZone: 'Asia/Ho_Chi_Minh',
   // }) // 09:00 PM
   // @UseGuards(ApiKeyAuthenticationGuard)
-  @UseInterceptors(A3PLogInterceptor)
-  @HttpCode(200)
-  @Post('update_amendsku_price')
-  async updatePricesNewSKUCronjob(): Promise<void> {
-    return await this.commandBus.execute(new NewCronUpdatePrice());
-  }
+  // @UseInterceptors(A3PLogInterceptor)
+  // @HttpCode(200)
+  // @Post('update_amendsku_price')
+  // async updatePricesNewSKUCronjob(): Promise<void> {
+  //   return await this.commandBus.execute(new NewCronUpdatePrice());
+  // }
 
   // @Post('testCron')
   // async testUpdatePricesCronjob(): Promise<void> {

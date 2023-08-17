@@ -18,7 +18,7 @@ export class POQueryImplement implements POQuery {
       return data;
   }
   async findByCodes(codes: string[]): Promise<FindPOByCodesResult> {
-    console.log("Querying...")
+    // console.log("Querying...")
     let sql = readConnection
       .getRepository(PurchaseOrderEntity)
       .createQueryBuilder('t1')

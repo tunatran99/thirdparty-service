@@ -16,7 +16,7 @@ export class PriceService {
   private readonly priceServiceRepo: PriceServiceRepositoryImplement;
 
   async callMobileApp(prices: PriceEntity[]) {
-    if (environment.NODE_ENV !== Environment.Production) {
+    if (environment.NODE_ENV === Environment.Production) {
       const donwloadMobileLink = environment.MBAPP_HOST;
       const donwloadMobileKEY = environment.MBAPP_APIKEY;
       const { success } = this.formatDataForMBApp(prices);
@@ -33,10 +33,10 @@ export class PriceService {
           .json()) as any;
 
         if (res.data?.error && res.data.error.length > 0) {
-          console.log(res.data.error);
+          this.logger.log(res.data.error);
         }
 
-        console.log('---------');
+        this.logger.log('---------');
       }
     } else {
       return prices;
@@ -225,9 +225,9 @@ export class PriceService {
         );
 
         // if (sku.stores.length !== 0) {
-          //Lấy từng store của sku
-          for (const store of sku.stores) {
-            if (eligibleStore.includes(store)) {
+        //Lấy từng store của sku
+        for (const store of sku.stores) {
+          // if (eligibleStore.includes(store)) {
             //Tạo record giá
             const psPrice = readConnection.getRepository(PriceEntity).create({
               sku: sku.SKU_CODE,
@@ -468,7 +468,8 @@ export class PriceService {
                     : null;
                 }
               }
-              // else {
+              else {
+                remainStores.push(store)
               //   // errors.push({
               //   //   sku,
               //   //   error: `Không có items_sell_prices và pricechanges phù hợp cho store ${psPrice.store}`,
@@ -510,7 +511,7 @@ export class PriceService {
               //         : null;
               //     }
               //   }
-              // }
+              }
             }
             if (isActiveMemberDay) {
               if (psPrice.member === 'Y') {
@@ -531,11 +532,11 @@ export class PriceService {
                 psPrice.memberMark = true;
               }
             }
-            psPrices.push(psPrice);
-            }
-          } // Kết thúc loop store
-          for (const store of remainStores) {
-            if (eligibleStore.includes(store)) {
+            if(psPrice.normalPrice) psPrices.push(psPrice);
+          // }
+        } // Kết thúc loop store
+        for (const store of remainStores) {
+          // if (eligibleStore.includes(store)) {
             //Tạo record giá
             const psPrice = readConnection.getRepository(PriceEntity).create({
               sku: sku.SKU_CODE,
@@ -573,12 +574,12 @@ export class PriceService {
                 psPrice.memberMark = true;
               }
             }
-            psPrices.push(psPrice);
-            }
-          } // Kết thúc loop store
+            /*if(psPrice.normalPrice && psPrice.promoPrice)*/ psPrices.push(psPrice);
+          // }
+        } // Kết thúc loop store
         // }
         // else {
-          
+
         // }
       } // Kết thúc loop sku
     }

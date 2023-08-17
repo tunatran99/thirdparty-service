@@ -7,7 +7,7 @@ export class CompareController {
 
   @Post('testCalc')
   async testCalc(@Body('stores') stores: string[]) {
-    await this.compareService.testReadFunction();
+    await this.compareService.testFunction(stores);
     console.log("Done!");
     return 1;
   }

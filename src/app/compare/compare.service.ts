@@ -30,7 +30,7 @@ export class CompareService {
       console.log(store)
       console.log("index:", index)
 
-      let wb = new ExcelJS.stream.xlsx.WorkbookReader(`src/pfprices/report/missingInPS_${store}.xlsx`, {
+      let wb = new ExcelJS.stream.xlsx.WorkbookReader(`src/pfprices/report/Merged.xlsx`, {
         sharedStrings: 'cache',
         hyperlinks: 'cache',
         worksheets: 'emit',
@@ -1048,7 +1048,7 @@ export class CompareService {
 
   async concatFileName() {
     let output = [];
-    const filesName = await fs.readdir(`src/newsku`);
+    const filesName = await fs.readdir(`src/pfprices/dept`);
     for (const filename of filesName) {
       output.push(filename.split('.')[0])
     }
@@ -1104,8 +1104,8 @@ export class CompareService {
         }
       }
       try {
-        await fs.access(`src/psprices/1006/${fileName}`);
-        const wbPS = new ExcelJS.stream.xlsx.WorkbookReader(`src/psprices/1006/${fileName}`, {});
+        await fs.access(`src/psprices/3016/${fileName}`);
+        const wbPS = new ExcelJS.stream.xlsx.WorkbookReader(`src/psprices/3016/${fileName}`, {});
         const psPrices = [] as PriceEntity[];
         for await (const worksheetReader of wbPS) {
           for await (const row of worksheetReader) {

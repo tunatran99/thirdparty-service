@@ -15,7 +15,7 @@ export class ShopeefoodController {
   @Get('merchant/menu')
   async getMenu(@Query('partnerMerchantID') id: number): Promise<any> {
     let payload = {
-      "merchantID": "GFSBPOS-700-854",
+      "merchantID": "",
       "partnerMerchantID": `${id}`,
       "section": {}
   };

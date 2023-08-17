@@ -34,18 +34,18 @@ export class A3PLogInterceptor implements NestInterceptor {
         //   responseBody,
         // });
 
-        this.logger.log({
-          url: request.url,
-          method: request.method,
-          ip: request.clientIp,
-          isSystemCall,
-          partnerId,
-          statusCode,
-          isFailed,
-          requestHeader,
-          requestBody,
-          responseBody,
-        })
+        // this.logger.log({
+        //   url: request.url,
+        //   method: request.method,
+        //   ip: request.clientIp,
+        //   isSystemCall,
+        //   partnerId,
+        //   statusCode,
+        //   isFailed,
+        //   requestHeader,
+        //   requestBody,
+        //   responseBody,
+        // })
 
         return data;
       }),
