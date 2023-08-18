@@ -7,7 +7,7 @@ import { RequestWithPartner } from 'src/user/presentation/dto/requested.partner.
 import { CronUpdatePrice } from '../application/command/cron.update.price';
 import { DownloadPriceToMobile } from '../application/command/download.price.to.mobile';
 import { UpdateAppliedList } from '../application/command/update.applied.list';
-import { FindFilterInfoQuery } from '../application/query/find.filter.info.query';
+import { FindCategory, FindDepartment, FindDivision, FindFilterInfoQuery, FindGroup } from '../application/query/find.filter.info.query';
 import { FindSkuPricesByCodesQuery } from '../application/query/find.sku.prices.bycodes.query';
 import { FindSkuPricesByCodesResult } from '../application/query/find.sku.prices.bycodes.result';
 import { FindSkuPricesByPartnerQuery } from '../application/query/find.sku.prices.bypartner.query';
@@ -80,6 +80,34 @@ export class SkuController {
   @Get('getfilterinfos')
   async getFilterInfos() {
     return await this.queryBus.execute(new FindFilterInfoQuery());
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Get('getdivs')
+  async getDivs(@Query('refId') refId?: string | string[]) {
+    const data = Array.isArray(refId) ? refId : [refId];
+    return await this.queryBus.execute(new FindDivision(data));
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Get('getgroups')
+  async getGroups(@Query('refId') refId?: string | string[]) {
+    const data = Array.isArray(refId) ? refId : [refId];
+    return await this.queryBus.execute(new FindGroup(data));
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Get('getdepts')
+  async getDepts(@Query('refId') refId?: string | string[]) {
+    const data = Array.isArray(refId) ? refId : [refId];
+    return await this.queryBus.execute(new FindDepartment(data));
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Get('getcates')
+  async getCates(@Query('refId') refId?: string | string[]) {
+    const data = Array.isArray(refId) ? refId : [refId];
+    return await this.queryBus.execute(new FindCategory(data));
   }
 
   @UseGuards(JwtAuthenticationGuard)

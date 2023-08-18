@@ -34,6 +34,7 @@ import { CategoryEntity } from 'src/bookingapp/infratsructure/entity/category';
 import { CategoryEntity as CategorySequenceEntity } from 'src/shopeefood/infratsructure/entity/category';
 import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
 import { GroupEntity } from 'src/bookingapp/infratsructure/entity/group';
+import { DivisionEntity } from 'src/bookingapp/infratsructure/entity/division';
 
 interface WriteConnection {
   readonly startTransaction: (
@@ -87,7 +88,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       CategoryEntity,
       CategorySequenceEntity,
       MenuEntity,
-      GroupEntity
+      GroupEntity,
+      DivisionEntity
     ],
     charset: 'utf8mb4_unicode_ci',
     host: environment.DB_HOST,

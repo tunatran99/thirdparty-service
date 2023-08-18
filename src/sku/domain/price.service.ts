@@ -24,7 +24,7 @@ export class PriceService {
       for (const [index, chunk] of chunks.entries()) {
         this.logger.log(`Calling: ${donwloadMobileLink} | ${index + 1}/${chunks.length} chunks`);
         const res = (await got
-          .post(donwloadMobileLink, {
+          .post(`${donwloadMobileLink}/api/downloadprice`, {
             headers: {
               'x-api-key': donwloadMobileKEY,
             },

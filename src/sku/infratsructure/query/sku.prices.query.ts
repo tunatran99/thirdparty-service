@@ -7,6 +7,7 @@ import { LineEntity } from 'src/bookingapp/infratsructure/entity/line';
 import { GroupEntity } from 'src/bookingapp/infratsructure/entity/group';
 import { DepartmentEntity } from 'src/bookingapp/infratsructure/entity/department';
 import { CategoryEntity } from 'src/bookingapp/infratsructure/entity/category';
+import { DivisionEntity } from 'src/bookingapp/infratsructure/entity/division';
 
 export interface SkuPricesQuery {
   findPricesByCodes: (codes: string[], partnerId: number) => Promise<PriceEntity[]>;
@@ -18,6 +19,10 @@ export interface SkuPricesQuery {
     storeId?: string,
   ) => Promise<FindSkuPricesByPartnerResult>;
   findFilterInfo: () => Promise<{ partners: PartnerEntity[]; stores: StoreEntity[]; 
-  lines: LineEntity[]; groups: GroupEntity[]; depts: DepartmentEntity[]; cates: CategoryEntity[] }>;
+  lines: LineEntity[]; cates: CategoryEntity[]  }>;
+  findDivs: (refId?: string[]) => Promise<any>;
+  findGroups: (refId?: string[]) => Promise<any>;
+  findDepts: (refId?: string[]) => Promise<any>;
+  findCates: (refId?: string[]) => Promise<any>;
   findSkuPricesDetail: (partnerId: number, sku: string) => Promise<FindSkuPricesDetailResult>;
 }
