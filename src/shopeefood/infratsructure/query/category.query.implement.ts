@@ -132,7 +132,7 @@ export class CategoryQueryImplement implements CategoryQuery {
         'items',
       )
       .where('t1.CATEGORY_ID in (:...cates) and t1.STORE = :store', { cates, store });
-      console.log(sql.groupBy('t1.CATEGORY_ID').getQuery())
+      // console.log(sql.groupBy('t1.CATEGORY_ID').getQuery())
     const data = await sql.groupBy('t1.CATEGORY_ID').getRawMany();
     return data.map((i) => {
       return {

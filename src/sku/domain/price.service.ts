@@ -16,15 +16,15 @@ export class PriceService {
   private readonly priceServiceRepo: PriceServiceRepositoryImplement;
 
   async callMobileApp(prices: PriceEntity[]) {
-    if (environment.NODE_ENV === Environment.Production) {
+    if (environment.NODE_ENV === Environment.Test) {
       const donwloadMobileLink = environment.MBAPP_HOST;
       const donwloadMobileKEY = environment.MBAPP_APIKEY;
       const { success } = this.formatDataForMBApp(prices);
       const chunks = _.chunk(success, environment.API_CHUNK_SIZE);
       for (const [index, chunk] of chunks.entries()) {
-        this.logger.log(`Calling: ${donwloadMobileLink}/api/downloadprice | ${index + 1}/${chunks.length} chunks`);
+        this.logger.log(`Calling: ${donwloadMobileLink} | ${index + 1}/${chunks.length} chunks`);
         const res = (await got
-          .post(`${donwloadMobileLink}/api/downloadprice`, {
+          .post(`${donwloadMobileLink}`, {
             headers: {
               'x-api-key': donwloadMobileKEY,
             },
@@ -229,7 +229,7 @@ export class PriceService {
         // if (sku.stores.length !== 0) {
         //Lấy từng store của sku
         for (const store of sku.stores) {
-          if (eligibleStore.includes(store)) {
+          // if (eligibleStore.includes(store)) {
             //Tạo record giá
             const psPrice = readConnection.getRepository(PriceEntity).create({
               sku: sku.SKU_CODE,
@@ -535,10 +535,10 @@ export class PriceService {
               }
             }
             if(psPrice.normalPrice) psPrices.push(psPrice);
-          }
+          // }
         } // Kết thúc loop store
         for (const store of remainStores) {
-          if (eligibleStore.includes(store)) {
+          // if (eligibleStore.includes(store)) {
             //Tạo record giá
             const psPrice = readConnection.getRepository(PriceEntity).create({
               sku: sku.SKU_CODE,
@@ -577,7 +577,7 @@ export class PriceService {
               }
             }
             /*if(psPrice.normalPrice && psPrice.promoPrice)*/ psPrices.push(psPrice);
-          }
+          // }
         } // Kết thúc loop store
         // }
         // else {
