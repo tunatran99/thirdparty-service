@@ -30,7 +30,7 @@ export class CompareService {
       console.log(store)
       console.log("index:", index)
 
-      let wb = new ExcelJS.stream.xlsx.WorkbookReader(`src/pfprices/report/Merged.xlsx`, {
+      let wb = new ExcelJS.stream.xlsx.WorkbookReader(`src/app/compare/Merge8.xlsx`, {
         sharedStrings: 'cache',
         hyperlinks: 'cache',
         worksheets: 'emit',
@@ -38,263 +38,150 @@ export class CompareService {
       let rowNumber = 1
       for await (const ws of wb) {
         for await (const row of ws) {
-          if (rowNumber > 1) {
-            if (index > 0) {
-              if (!skuCodes.includes(row.values[6])) {
-                skuCodes.push(row.values[6]);
-              }
-            }
-            else {
-              skuCodes.push(row.values[6]);
+          if (rowNumber > 1 && row.values[1] !== undefined) {
+            // console.log(row.values[1])
+            if (row.values[1].substring(0, 8).length === 8) {
+              skuCodes.push(row.values[1].substring(0, 8));
             }
           }
           rowNumber++;
         }
       }
     }
-    console.log(skuCodes[0])
+    console.log(skuCodes.length)
+    let result = await readConnection.getRepository(SkuEntity).createQueryBuilder('t1')
+    .where('t1.SKU_CODE in (:...skuCodes)', { skuCodes }).getRawMany();
+
+    result = result.map(i => i['t1_SKU_CODE'])
+
+    // console.log(result)
+
+    console.log(skuCodes.filter(k => !result.includes(k)));
+    // console.log(skuCodes[0])
 
 
-    const { prices } = await this.priceService.calcPrice(skuCodes);
-    console.log(prices.length)
+    // const { prices } = await this.priceService.calcPrice(skuCodes);
+    // console.log(prices.length)
 
-    // const wbs = {},
-    //   wss = {};
+    // this.logger.log("Ghi vào file")
+    
+    // const wb = new ExcelJS.stream.xlsx.WorkbookWriter({
+    //   filename: `src/newsku/9997.xlsx`,
+    // });
+    // const ws = wb.addWorksheet();
+    // ws.addRow([
+    //   'sku',
+    //   'store',
+    //   'line',
+    //   'division',
+    //   'group',
+    //   'dept',
+    //   'category',
+    //   'status',
+    //   'member',
+    //   'uomEn',
+    //   'uomVn',
 
-    this.logger.log("Ghi vào file")
-    // for (const price of prices) {
-    //   if (!wbs[price.dept]) {
-    //     wbs[price.dept] = new ExcelJS.stream.xlsx.WorkbookWriter({
-    //       filename: `src/newsku/${price.dept}.xlsx`,
-    //     });
-    //     wss[price.dept] = wbs[price.dept].addWorksheet();
-    //     wss[price.dept]
-    //       .addRow([
-    //         'sku',
-    //         'store',
-    //         'line',
-    //         'division',
-    //         'group',
-    //         'dept',
-    //         'category',
-    //         'status',
-    //         'member',
-    //         'uomEn',
-    //         'uomVn',
-    //         'normalPrice',
-    //         'promoPrice',
-    //         'oriPromoPrice',
-    //         'startTime',
-    //         'endTime',
-    //         'memberMark',
-    //         'pcNo',
-    //         'pcStatus',
-    //         'pcTransType',
-    //         'pcType',
-    //         'pcTypeValue',
-    //         'pcPrice',
-    //         'pcStartDate',
-    //         'pcEndDate',
-    //         'pcStartTime',
-    //         'pcEndTime',
-    //         'pcNormal',
-    //         'pcNormalStatus',
-    //         'pcNormalTransType',
-    //         'pcNormalType',
-    //         'pcNormalTypeValue',
-    //         'pcNormalPrice',
-    //         'pcNormalStartDate',
-    //         'pcNormalEndDate',
-    //         'pcNormalStartTime',
-    //         'pcNormalEndTime',
-    //         'gpcNo',
-    //         'gpcStatus',
-    //         'gpcTransType',
-    //         'gpcType',
-    //         'gpcTypeValue',
-    //         'gpcPrice',
-    //         'gpcStartDate',
-    //         'gpcEndDate',
-    //         'gpcStartTime',
-    //         'gpcEndTime',
-    //         'priceFrom',
-    //       ])
-    //       .commit();
-    //   }
-    //   wss[price.dept]
-    //     .addRow([
-    //       price.sku,
-    //       price.store,
-    //       price.line,
-    //       price.division,
-    //       price.group,
-    //       price.dept,
-    //       price.category,
-    //       price.status,
-    //       price.member,
-    //       price.uomEn,
-    //       price.uomVn,
-    //       price.normalPrice,
-    //       price.promoPrice,
-    //       price.oriPromoPrice,
-    //       price.startTime,
-    //       price.endTime,
-    //       price.memberMark,
-    //       price.pcNo,
-    //       price.pcStatus,
-    //       price.pcTransType,
-    //       price.pcType,
-    //       price.pcTypeValue,
-    //       price.pcPrice,
-    //       price.pcStartDate,
-    //       price.pcEndDate,
-    //       price.pcStartTime,
-    //       price.pcEndTime,
-    //       price.pcNormal,
-    //       price.pcNormalStatus,
-    //       price.pcNormalTransType,
-    //       price.pcNormalType,
-    //       price.pcNormalTypeValue,
-    //       price.pcNormalPrice,
-    //       price.pcNormalStartDate,
-    //       price.pcNormalEndDate,
-    //       price.pcNormalStartTime,
-    //       price.pcNormalEndTime,
-    //       price.gpcNo,
-    //       price.gpcStatus,
-    //       price.gpcTransType,
-    //       price.gpcType,
-    //       price.gpcTypeValue,
-    //       price.gpcPrice,
-    //       price.gpcStartDate,
-    //       price.gpcEndDate,
-    //       price.gpcStartTime,
-    //       price.gpcEndTime,
-    //       price.priceFrom,
-    //     ])
-    //     .commit();
+    //   'normal price',
+    //   'promo price',
+    //   'ori promo price',
+    //   'start time',
+    //   'end time',
+    //   'member mark',
+
+    //   'pc no',
+    //   'pc status',
+    //   'pc trans type',
+    //   'pc type',
+    //   'pc type value',
+    //   'pc price',
+    //   'pc start date',
+    //   'pc end start',
+    //   'pc start time',
+    //   'pc end time',
+
+    //   'pc normal',
+    //   'pc normal status',
+    //   'pc normal trans type',
+    //   'pc normal type',
+    //   'pc normal type value',
+    //   'pc normal price',
+    //   'pc normal start date',
+    //   'pc normal end date',
+    //   'pc normal start time',
+    //   'pc normal end time',
+
+    //   'gpc no',
+    //   'gpc status',
+    //   'gpc trans type',
+    //   'gpc type',
+    //   'gpc type value',
+    //   'gpc price',
+    //   'gpc start date',
+    //   'gpc end date',
+    //   'gpc start time',
+    //   'gpc end time',
+
+    //   'price from',
+    // ]).commit();
+    // for (const psPrice of prices) {
+    //   ws.addRow([
+    //     psPrice.sku,
+    //     psPrice.store,
+    //     psPrice.line,
+    //     psPrice.division,
+    //     psPrice.group,
+    //     psPrice.dept,
+    //     psPrice.category,
+    //     psPrice.status,
+    //     psPrice.member,
+    //     psPrice.uomEn,
+    //     psPrice.uomVn,
+
+    //     psPrice.normalPrice,
+    //     psPrice.promoPrice,
+    //     psPrice.oriPromoPrice,
+    //     psPrice.startTime,
+    //     psPrice.endTime,
+    //     psPrice.memberMark,
+
+    //     psPrice.pcNo,
+    //     psPrice.pcStatus,
+    //     psPrice.pcTransType,
+    //     psPrice.pcType,
+    //     psPrice.pcTypeValue,
+    //     psPrice.pcPrice,
+    //     psPrice.pcStartDate,
+    //     psPrice.pcEndDate,
+    //     psPrice.pcStartTime,
+    //     psPrice.pcEndTime,
+
+    //     psPrice.pcNormal,
+    //     psPrice.pcNormalStatus,
+    //     psPrice.pcNormalTransType,
+    //     psPrice.pcNormalType,
+    //     psPrice.pcNormalTypeValue,
+    //     psPrice.pcNormalPrice,
+    //     psPrice.pcNormalStartDate,
+    //     psPrice.pcNormalEndDate,
+    //     psPrice.pcNormalStartTime,
+    //     psPrice.pcNormalEndTime,
+
+    //     psPrice.gpcNo,
+    //     psPrice.gpcStatus,
+    //     psPrice.gpcTransType,
+    //     psPrice.gpcType,
+    //     psPrice.gpcTypeValue,
+    //     psPrice.gpcPrice,
+    //     psPrice.gpcStartDate,
+    //     psPrice.gpcEndDate,
+    //     psPrice.gpcStartTime,
+    //     psPrice.gpcEndTime,
+
+    //     psPrice.priceFrom,
+    //   ]).commit();
     // }
-
-    // for (const key of Object.keys(wbs)) {
-    //   await wbs[key].commit();
-    // }
-    const wb = new ExcelJS.stream.xlsx.WorkbookWriter({
-      filename: `src/newsku/9999.xlsx`,
-    });
-    const ws = wb.addWorksheet();
-    ws.addRow([
-      'sku',
-      'store',
-      'line',
-      'division',
-      'group',
-      'dept',
-      'category',
-      'status',
-      'member',
-      'uomEn',
-      'uomVn',
-
-      'normal price',
-      'promo price',
-      'ori promo price',
-      'start time',
-      'end time',
-      'member mark',
-
-      'pc no',
-      'pc status',
-      'pc trans type',
-      'pc type',
-      'pc type value',
-      'pc price',
-      'pc start date',
-      'pc end start',
-      'pc start time',
-      'pc end time',
-
-      'pc normal',
-      'pc normal status',
-      'pc normal trans type',
-      'pc normal type',
-      'pc normal type value',
-      'pc normal price',
-      'pc normal start date',
-      'pc normal end date',
-      'pc normal start time',
-      'pc normal end time',
-
-      'gpc no',
-      'gpc status',
-      'gpc trans type',
-      'gpc type',
-      'gpc type value',
-      'gpc price',
-      'gpc start date',
-      'gpc end date',
-      'gpc start time',
-      'gpc end time',
-
-      'price from',
-    ]).commit();
-    for (const psPrice of prices) {
-      ws.addRow([
-        psPrice.sku,
-        psPrice.store,
-        psPrice.line,
-        psPrice.division,
-        psPrice.group,
-        psPrice.dept,
-        psPrice.category,
-        psPrice.status,
-        psPrice.member,
-        psPrice.uomEn,
-        psPrice.uomVn,
-
-        psPrice.normalPrice,
-        psPrice.promoPrice,
-        psPrice.oriPromoPrice,
-        psPrice.startTime,
-        psPrice.endTime,
-        psPrice.memberMark,
-
-        psPrice.pcNo,
-        psPrice.pcStatus,
-        psPrice.pcTransType,
-        psPrice.pcType,
-        psPrice.pcTypeValue,
-        psPrice.pcPrice,
-        psPrice.pcStartDate,
-        psPrice.pcEndDate,
-        psPrice.pcStartTime,
-        psPrice.pcEndTime,
-
-        psPrice.pcNormal,
-        psPrice.pcNormalStatus,
-        psPrice.pcNormalTransType,
-        psPrice.pcNormalType,
-        psPrice.pcNormalTypeValue,
-        psPrice.pcNormalPrice,
-        psPrice.pcNormalStartDate,
-        psPrice.pcNormalEndDate,
-        psPrice.pcNormalStartTime,
-        psPrice.pcNormalEndTime,
-
-        psPrice.gpcNo,
-        psPrice.gpcStatus,
-        psPrice.gpcTransType,
-        psPrice.gpcType,
-        psPrice.gpcTypeValue,
-        psPrice.gpcPrice,
-        psPrice.gpcStartDate,
-        psPrice.gpcEndDate,
-        psPrice.gpcStartTime,
-        psPrice.gpcEndTime,
-
-        psPrice.priceFrom,
-      ]).commit();
-    }
-    await wb.commit();
+    // await wb.commit();
   }
   async testReadFunction() {
     const wbs = {},
@@ -1104,8 +991,8 @@ export class CompareService {
         }
       }
       try {
-        await fs.access(`src/psprices/5171/${fileName}`);
-        const wbPS = new ExcelJS.stream.xlsx.WorkbookReader(`src/psprices/5171/${fileName}`, {});
+        await fs.access(`src/psprices/1009/${fileName}`);
+        const wbPS = new ExcelJS.stream.xlsx.WorkbookReader(`src/psprices/1009/${fileName}`, {});
         const psPrices = [] as PriceEntity[];
         for await (const worksheetReader of wbPS) {
           for await (const row of worksheetReader) {

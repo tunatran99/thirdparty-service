@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity({ name: 'ps_price', synchronize: true })
+@Entity({ name: 'ps_price', synchronize: false })
 export class PriceEntity {
   @PrimaryColumn({ length: 45, charset: 'utf8' })
   sku: string;

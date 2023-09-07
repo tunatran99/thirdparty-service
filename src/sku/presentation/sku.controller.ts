@@ -34,7 +34,7 @@ export class SkuController {
     return await this.queryBus.execute(new FindSkuPricesByCodesQuery(request.user.id, body.skus));
   }
 
-  @UseGuards(ApiKeyAuthenticationGuard)
+  // @UseGuards(ApiKeyAuthenticationGuard)
   @UseInterceptors(A3PLogInterceptor)
   @HttpCode(200)
   @Post('downloadtomobile')

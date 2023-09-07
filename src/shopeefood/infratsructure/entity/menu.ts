@@ -1,12 +1,12 @@
 import { BaseEntity } from 'libs/base.entity';
 import { Column, Entity } from 'typeorm';
 
-@Entity({ name: 'spf_menu', synchronize: true })
+@Entity({ name: 'spf_menu', synchronize: false })
 export class MenuEntity extends BaseEntity {
   @Column({ nullable: true })
-  CATEGORY?: string;
+  CATEGORY_ID?: number;
   @Column({ nullable: true })
-  SKU?: string;
+  SKU_ID?: number;
   @Column({ nullable: true })
   STORE?: string;
   @Column({ nullable: true })

@@ -31,7 +31,7 @@ import { GroupPricechangeEntity } from 'src/sku/infratsructure/entity/group_pric
 import { StoreEntity } from 'src/sku/infratsructure/entity/store';
 import { LogEntity } from 'src/log/infratsructure/entity/log';
 import { CategoryEntity } from 'src/bookingapp/infratsructure/entity/category';
-import { CategoryEntity as CategorySequenceEntity } from 'src/shopeefood/infratsructure/entity/category';
+import { CategoryEntity as CategoryThirdPartyEntity } from 'src/shopeefood/infratsructure/entity/category';
 import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
 import { GroupEntity } from 'src/bookingapp/infratsructure/entity/group';
 import { DivisionEntity } from 'src/bookingapp/infratsructure/entity/division';
@@ -86,7 +86,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       StoreEntity,
       LogEntity,
       CategoryEntity,
-      CategorySequenceEntity,
+      CategoryThirdPartyEntity,
       MenuEntity,
       GroupEntity,
       DivisionEntity

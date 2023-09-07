@@ -45,20 +45,46 @@ export class CreateDataHandler implements ICommandHandler<CreateData, number> {
       const workbook = xlsx.read(data.excelFile.buffer)
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const excelData: IData[] = xlsx.utils.sheet_to_json(worksheet);
+      const entities = [];
 
-      const entities = excelData.map((item) => {
+      for(const data of excelData) {
+        const [cateId, skuId] = await Promise.all([
+          this.DataRepo.findCategoryIdByCode(data.CATEGORY),
+          this.DataRepo.findSkuIdByCode(data.SKU)
+        ]);
+
         const entity = new MenuEntity();
-        entity.CATEGORY = item.CATEGORY;
-        entity.SKU = item.SKU;
-        entity.STORE = item.STORE;
-        entity.DESCRIPTION = item.DESCRIPTION;
-        entity.STATUS = item.STATUS;
-        entity.SKU_IMAGE = item.SKU_IMAGE;
-        entity.SEQUENCE = item.SEQUENCE;
-        return entity;
-      });
+        entity.CATEGORY_ID = cateId;
+        entity.SKU_ID = skuId;
+        entity.STORE = data.STORE;
+        entity.DESCRIPTION = data.DESCRIPTION;
+        entity.STATUS = data.STATUS;
+        entity.SKU_IMAGE = data.SKU_IMAGE;
+        entity.SEQUENCE = data.SEQUENCE;
 
-      const savedItems = await this.DataRepo.save(entities);
+        entities.push(entity)
+      }
+
+      // excelData.forEach(async (item) => {
+      //   const [cateId, skuId, storeId] = await Promise.all([
+      //     this.DataRepo.findCategoryIdByCode(item.CATEGORY),
+      //     this.DataRepo.findSkuIdByCode(item.SKU),
+      //     this.DataRepo.findStoreIdByCode(item.STORE)
+      //   ]);
+
+      //   const entity = new MenuEntity();
+      //   entity.CATEGORY_ID = cateId;
+      //   entity.SKU_ID = skuId;
+      //   entity.STORE_ID = storeId;
+      //   entity.DESCRIPTION = item.DESCRIPTION;
+      //   entity.STATUS = item.STATUS;
+      //   entity.SKU_IMAGE = item.SKU_IMAGE;
+      //   entity.SEQUENCE = item.SEQUENCE;
+
+      //   entities.push(entity)
+      // });
+
+      await this.DataRepo.save(entities);
 
       return 1;
     }

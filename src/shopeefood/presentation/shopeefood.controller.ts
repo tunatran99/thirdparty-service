@@ -8,21 +8,20 @@ import { CreateCategory } from 'src/shopeefood/application/command/create.catego
 
 @Controller('shopeefood')
 export class ShopeefoodController {
-  constructor(readonly commandBus: CommandBus, readonly queryBus: QueryBus) {}
+  constructor(readonly commandBus: CommandBus, readonly queryBus: QueryBus) { }
 
-  @UseGuards(ApiKeyAuthenticationGuard)
+  // @UseGuards(ApiKeyAuthenticationGuard)
   @HttpCode(200)
   @Get('merchant/menu')
-  async getMenu(@Query('partnerMerchantID') id: number): Promise<any> {
+  async getMenu(@Query('partnerMerchantID') id: string): Promise<any> {
     let payload = {
-      "merchantID": "",
       "partnerMerchantID": `${id}`,
       "section": {}
-  };
+    };
 
-  const { section } = await this.queryBus.execute(new FindCategoryByCodesQuery(id));
-  payload.section = section;
-  
+    const { section } = await this.queryBus.execute(new FindCategoryByCodesQuery(id));
+    payload.section = section;
+
     return payload;
   }
 

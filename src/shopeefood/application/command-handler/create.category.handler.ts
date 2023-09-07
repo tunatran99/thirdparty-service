@@ -21,16 +21,18 @@ export class CreateCategoryHandler implements ICommandHandler<CreateCategory, nu
       const workbook = xlsx.read(data.excelFile.buffer);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const excelData: ICategory[] = xlsx.utils.sheet_to_json(worksheet);
-      // console.log(excelData)
 
       const entities = excelData.map((item) => {
         const entity = new CategoryEntity();
         entity.CATEGORY_CODE = item.CATEGORY_CODE;
+        entity.CATEGORY_NAME = item.CATEGORY_NAME;
         entity.SEQUENCE = item.SEQUENCE;
+        entity.ACTIVE = item.ACTIVE
+        entity.ANCESTOR = item.ANCESTOR;
         return entity;
       });
 
-      const savedItems = await this.DataRepo.save(entities);
+      await this.DataRepo.save(entities);
 
       return 1;
     }

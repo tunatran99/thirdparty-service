@@ -1,7 +1,7 @@
 
 export type DataProperties = Readonly<
   Required<{
-    CATEGORY: string;
+  CATEGORY: string;
   SKU: string;
   STORE: string;
   DESCRIPTION: string;

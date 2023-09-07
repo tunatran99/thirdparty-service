@@ -22,7 +22,7 @@ export class PriceService {
       const { success } = this.formatDataForMBApp(prices);
       const chunks = _.chunk(success, environment.API_CHUNK_SIZE);
       for (const [index, chunk] of chunks.entries()) {
-        this.logger.log(`Calling: ${donwloadMobileLink} | ${index + 1}/${chunks.length} chunks`);
+        this.logger.log(`Calling: ${donwloadMobileLink}/api/downloadprice | ${index + 1}/${chunks.length} chunks`);
         const res = (await got
           .post(`${donwloadMobileLink}/api/downloadprice`, {
             headers: {
@@ -86,7 +86,9 @@ export class PriceService {
   }
 
   async calcPrice(skusParam?: string[], priceDate?: string) {
-    let eligibleStore = ["1001", "1002", "1003", "1004", "1005", "1006", "1008", "1009"]
+    let eligibleStore = ["1001", "1002", "1003", "1004", "1005", "1006", "1008", "1009", "3002", "3003", "3005", "3008", "3011", 
+  "3013", "3014", "3015", "3016", "3018", "3019", "3022", "3023", "3024", "3027", "3028", "5109", "5171", "5172", "5174", "5501", 
+"5503", "5804", "5806", "5871", "5872", "5874", "5901", "5173", "5175", "5176", "5873", "5875", "5876", "5902"]
     this.logger.log(`${moment().format('DD/MM/YYYY HH:mm:ss')} - Bắt đầu tính giá`);
 
     //Chuẩn bị các config params
@@ -227,7 +229,7 @@ export class PriceService {
         // if (sku.stores.length !== 0) {
         //Lấy từng store của sku
         for (const store of sku.stores) {
-          // if (eligibleStore.includes(store)) {
+          if (eligibleStore.includes(store)) {
             //Tạo record giá
             const psPrice = readConnection.getRepository(PriceEntity).create({
               sku: sku.SKU_CODE,
@@ -533,10 +535,10 @@ export class PriceService {
               }
             }
             if(psPrice.normalPrice) psPrices.push(psPrice);
-          // }
+          }
         } // Kết thúc loop store
         for (const store of remainStores) {
-          // if (eligibleStore.includes(store)) {
+          if (eligibleStore.includes(store)) {
             //Tạo record giá
             const psPrice = readConnection.getRepository(PriceEntity).create({
               sku: sku.SKU_CODE,
@@ -575,7 +577,7 @@ export class PriceService {
               }
             }
             /*if(psPrice.normalPrice && psPrice.promoPrice)*/ psPrices.push(psPrice);
-          // }
+          }
         } // Kết thúc loop store
         // }
         // else {
