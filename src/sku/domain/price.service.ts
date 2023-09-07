@@ -16,7 +16,7 @@ export class PriceService {
   private readonly priceServiceRepo: PriceServiceRepositoryImplement;
 
   async callMobileApp(prices: PriceEntity[]) {
-    if (environment.NODE_ENV === Environment.Test) {
+    // if (environment.NODE_ENV === Environment.Test) {
       const donwloadMobileLink = environment.MBAPP_HOST;
       const donwloadMobileKEY = environment.MBAPP_APIKEY;
       const { success } = this.formatDataForMBApp(prices);
@@ -38,9 +38,9 @@ export class PriceService {
 
         this.logger.log('---------');
       }
-    } else {
-      return prices;
-    }
+    // } else {
+    //   return prices;
+    // }
   }
 
   formatDataForMBApp(prices: PriceEntity[], skusNotFound: string[] = []) {
@@ -75,7 +75,7 @@ export class PriceService {
         success.push({
           sku_code: ps.sku,
           sku_status: ps.status,
-          uom: ps.uomVn,
+          uom: ps.uomVn ? ps.uomVn : ps.uomEn,
           apply_store: [priceData],
         });
       } else {
