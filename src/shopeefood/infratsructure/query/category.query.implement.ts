@@ -145,7 +145,7 @@ export class CategoryQueryImplement implements CategoryQuery {
             id: k.id,
             sequence: k.sequence,
             sort_type: 1,
-            name: k.name,
+            name: `${k.name} - ${k.id}`,
             availableStatus: k.availableStatus === 0 ? "AVAILABLE" : "UNAVAILABLE",
             description: k.description,
             price: parseInt(k.promoPrice) ? parseInt(k.promoPrice) : parseInt(k.normalPrice) ? parseInt(k.normalPrice) : 30000,

@@ -68,7 +68,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       `,
       )
       .leftJoin('ps_price', 't2', 't1.SKU_CODE = t2.sku')
-      .innerJoin('ps_partner_price', 't3', 't2.sku = t3.sku AND t2.store = t3.store')
+      .leftJoin('ps_partner_price', 't3', 't2.sku = t3.sku AND t2.store = t3.store')
       .where('t3.partnerId = :partnerId', { partnerId });
     if (storeId) {
       sql = sql.andWhere('t2.store = :storeId', { storeId });
