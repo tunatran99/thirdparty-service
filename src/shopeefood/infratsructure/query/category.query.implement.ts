@@ -2,12 +2,50 @@ import { readConnection } from '@libs/database.module';
 import { CategoryQuery } from './category.query';
 import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { CategoryEntity } from '../entity/category';
+import { Brackets } from 'typeorm';
 
 export class CategoryQueryImplement implements CategoryQuery {
-  async selectStoreRecords(id: string): Promise<any> {
-    if(id !== "1009") {
-      throw new HttpException({ message: `Không thể truy cập cửa hàng này` }, HttpStatus.BAD_REQUEST)
+  async find(search?: string, offset?: number, limit?: number): Promise<any> {
+    let sql = await readConnection
+      .getRepository(CategoryEntity)
+      .createQueryBuilder('t1');
+
+    if(search) {
+      sql = sql.andWhere(
+        new Brackets((qb) => {
+          qb.where('t1.CATEGORY_CODE like :search', { search: `%${search}` })
+            .orWhere('t1.CATEGORY_NAME like :search', {
+              search: `%${search}%`,
+            })
+        }),
+      );
     }
+
+    if(offset && limit) {
+      sql = sql.offset(offset).limit(limit);
+    }
+
+    const [data, total] = await Promise.all([sql.getMany(), sql.getCount()]);
+    return {
+      items: data.map((i) => {
+        return {
+          id: i.id,
+          code: i.CATEGORY_CODE,
+          name: i.CATEGORY_NAME,
+          active: i.ACTIVE,
+          sequence: i.SEQUENCE,
+          ancestor: i.ANCESTOR,
+        };
+      }),
+      total,
+    };
+  };
+
+  async selectStoreRecords(id: string): Promise<any> {
+    // if(id !== "1009") {
+    //   throw new HttpException({ message: `Không thể truy cập cửa hàng này` }, HttpStatus.BAD_REQUEST)
+    // }
     
     let sql = readConnection
       .getRepository(MenuEntity)
@@ -115,7 +153,7 @@ export class CategoryQueryImplement implements CategoryQuery {
       .leftJoin('thirdparty_category', 't2', 't1.CATEGORY_ID = t2.id')
       .leftJoin('sku', 't4', 't1.SKU_ID = t4.SKU_ID')
       .leftJoin('ps_price', 't5', '(t4.SKU_CODE = t5.sku and t1.STORE = t5.store)')
-      .leftJoin('pop_sku_image', 't6', 't1.SKU_ID = t6.skuId')
+      .leftJoin('pop_sku_image_link', 't6', 't1.SKU_ID = t6.skuId')
       .addSelect(
         `json_arrayagg(
           json_object(
@@ -126,7 +164,7 @@ export class CategoryQueryImplement implements CategoryQuery {
             "description", t1.description,
             "promoPrice", t5.promoPrice,
             "normalPrice", t5.normalPrice,
-            "filePath", t6.filePath
+            "filePath", t6.url
           )
         )`,
         'items',
@@ -149,7 +187,7 @@ export class CategoryQueryImplement implements CategoryQuery {
             availableStatus: k.availableStatus === 0 ? "AVAILABLE" : "UNAVAILABLE",
             description: k.description,
             price: parseInt(k.promoPrice) ? parseInt(k.promoPrice) : parseInt(k.normalPrice) ? parseInt(k.normalPrice) : 30000,
-            photos: [`${ip}/${k.filePath}`]
+            photos: /*[`${ip}/${k.filePath}`]*/[k.filePath]
           }
         })
       }

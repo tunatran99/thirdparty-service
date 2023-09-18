@@ -5,6 +5,8 @@ import { FindCategoryByCodesQuery } from '../application/query/find.category.byc
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateData } from 'src/shopeefood/application/command/create.data.command';
 import { CreateCategory } from 'src/shopeefood/application/command/create.category.command';
+import { FindCategoryQuery } from '../application/query/find.category.query';
+import { SearchDTO } from './dto/common.dto';
 
 @Controller('shopeefood')
 export class ShopeefoodController {
@@ -23,6 +25,12 @@ export class ShopeefoodController {
     payload.section = section;
 
     return payload;
+  }
+
+  @Get('category')
+  async GetCategory(@Query() query: SearchDTO): Promise<void> {
+    const q = new FindCategoryQuery(query);
+    return await this.queryBus.execute(q);
   }
 
   @Post('upload')

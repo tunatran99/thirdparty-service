@@ -25,6 +25,7 @@ export class CreateDataHandler implements ICommandHandler<CreateData, number> {
       const entities = [];
 
       for (const data of excelData) {
+        console.log(data)
         const [cateId, skuId] = await Promise.all([
           this.DataRepo.findCategoryIdByCode(data.CATEGORY),
           this.DataRepo.findSkuIdByCode(data.SKU)
