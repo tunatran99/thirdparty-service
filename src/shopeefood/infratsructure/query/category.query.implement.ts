@@ -154,6 +154,7 @@ export class CategoryQueryImplement implements CategoryQuery {
       .leftJoin('sku', 't4', 't1.SKU_ID = t4.SKU_ID')
       .leftJoin('ps_price', 't5', '(t4.SKU_CODE = t5.sku and t1.STORE = t5.store)')
       .leftJoin('pop_sku_image_link', 't6', 't1.SKU_ID = t6.skuId')
+      .leftJoin('pop_sku_image', 't7', 't1.SKU_ID = t7.skuId')
       .addSelect(
         `json_arrayagg(
           json_object(
@@ -164,7 +165,7 @@ export class CategoryQueryImplement implements CategoryQuery {
             "description", t1.description,
             "promoPrice", t5.promoPrice,
             "normalPrice", t5.normalPrice,
-            "filePath", t6.url
+            "filePath", ifnull(t6.url, t7.filePath)
           )
         )`,
         'items',
