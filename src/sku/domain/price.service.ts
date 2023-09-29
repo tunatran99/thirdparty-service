@@ -49,7 +49,7 @@ export class PriceService {
   getAuthToken(store: string) {
     const downloadShopeeLink = environment.SHOPEEFOOD_HOST;
     const downloadShopeKEY = environment.SHOPEEFOOD_SECRET;
-    const message = "POST|" + downloadShopeeLink + "|" + `{ "partner_restaurant_id":"${store}" }`;
+    const message = "POST|" + downloadShopeeLink + "|" + `{"partner_restaurant_id":"${store}"}`;
 
     console.log(message);
 
@@ -65,7 +65,7 @@ export class PriceService {
     const downloadShopeeLink = environment.SHOPEEFOOD_HOST;
     const authToken = this.getAuthToken(store);
 
-    this.logger.log(`Calling: ${downloadShopeeLink}`);
+    this.logger.log(`Calling: ${downloadShopeeLink} |`);
 
     const res = (await got
       .post(`${downloadShopeeLink}`, {

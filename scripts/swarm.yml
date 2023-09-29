@@ -13,6 +13,7 @@ services:
       TZ: "Asia/Ho_Chi_Minh"
       NODE_ENV: ${NODE_ENV}
       APPNAME: ${APPNAME}
+      PORT: ${PORT}
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_NAME: ${DB_NAME}
