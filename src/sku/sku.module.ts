@@ -15,7 +15,7 @@ import { PriceServiceRepositoryImplement } from './infratsructure/repository/pri
 import { SkuController } from './presentation/sku.controller';
 import { CronUpdatePriceHandler } from './application/command-handler/cron.update.price.handler';
 import { CompareModule } from 'src/app/compare/compare.module';
-import { NewCronUpdatePriceHandler } from './application/command-handler/new.cron.update.price.handler';
+import { CronSyncMenuHandler } from './application/command-handler/cron.sync.menu.handler';
 
 const infrastructure = [SkuPricesQueryImplement, PartnerPricesRepositoryImplement, PriceServiceRepositoryImplement];
 
@@ -28,7 +28,7 @@ const application = [
   FindSkuPricesDetailQueryHandler,
   UpdateAppliedListHandler,
   CronUpdatePriceHandler,
-  NewCronUpdatePriceHandler,
+  CronSyncMenuHandler,
   FindDivisionHandler,
   FindGroupHandler,
   FindDepartmentHandler,

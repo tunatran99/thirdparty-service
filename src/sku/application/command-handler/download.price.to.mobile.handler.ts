@@ -145,10 +145,13 @@ export class DownloadPriceToMobileHandler implements ICommandHandler<DownloadPri
     // }
     // await wb.commit();
     // }
-    const { prices } = await this.priceService.calcPrice(skuCodes);
-    await this.priceServiceRepo.savePrices(prices);
+    const { prices/*, promises*/ } = await this.priceService.calcPrice(skuCodes);
+    /*const pricePromise =*/await this.priceServiceRepo.savePrices(prices);
+    // promises.push(pricePromise)
+    // await Promise.all(promises)
     try {
       const pricesToSend = await this.skuPricesQuery.findPricesByCodes(skuCodes, 5);
+      // await this.priceService.syncMenu('1001');
       return await this.priceService.callMobileApp(pricesToSend);
     }
     catch (err) {

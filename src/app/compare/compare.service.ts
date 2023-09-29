@@ -991,8 +991,8 @@ export class CompareService {
         }
       }
       try {
-        await fs.access(`src/psprices/1009/${fileName}`);
-        const wbPS = new ExcelJS.stream.xlsx.WorkbookReader(`src/psprices/1009/${fileName}`, {});
+        await fs.access(`src/psprices/1001/${fileName}`);
+        const wbPS = new ExcelJS.stream.xlsx.WorkbookReader(`src/psprices/1001/${fileName}`, {});
         const psPrices = [] as PriceEntity[];
         for await (const worksheetReader of wbPS) {
           for await (const row of worksheetReader) {

@@ -12,7 +12,7 @@ export class MenuEntity extends BaseEntity {
   @Column({ nullable: true })
   DESCRIPTION?: string;
   @Column({ nullable: true })
-  STATUS?: number;
+  STATUS?: boolean;
   @Column({ nullable: true })
   SKU_IMAGE?: string;
   @Column({ nullable: true })

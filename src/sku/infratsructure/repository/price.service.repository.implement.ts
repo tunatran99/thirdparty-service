@@ -8,6 +8,7 @@ import { SkuEntity } from '../entity/sku';
 import { UomEntity } from '../entity/uom';
 import { PriceServiceRepository } from './price.service.repository';
 import { StoreEntity } from '../entity/store';
+import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
 
 export class PriceServiceRepositoryImplement implements PriceServiceRepository {
   async findUom(): Promise<UomEntity[]> {
@@ -20,7 +21,7 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
 
   async findLatestSku(date: string): Promise<SkuEntity[]> {
     let sql = readConnection.getRepository(SkuEntity).createQueryBuilder('t1')
-    .where('t1.MODIFIED_DATE = :date', { date });
+      .where('t1.MODIFIED_DATE = :date', { date });
     return await sql.getMany();
   }
 
@@ -49,6 +50,17 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
       .getMany();
   }
 
+  async findExpiredPcBySkus(skus: string[], now: string): Promise<PricechangeEntity[]> {
+    return await readConnection
+      .getRepository(PricechangeEntity)
+      .createQueryBuilder('t1')
+      .where('t1.SKU IN (:...skus)', { skus })
+      .andWhere('t1.STATUS <> "D"')
+      .andWhere('t1.END_DATE < :now', { now })
+      .andWhere('t1.PROCESS_STATUS IS NULL')
+      .getMany();
+  }
+
   async findPcByStartdate(startdate: string): Promise<PricechangeEntity[]> {
     return await readConnection
       .getRepository(PricechangeEntity)
@@ -65,6 +77,25 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
       .getMany();
   }
 
+  async findExpiredGpcByCategories(categories: string[], now: string): Promise<GroupPricechangeEntity[]> {
+    return await readConnection
+      .getRepository(GroupPricechangeEntity)
+      .createQueryBuilder('t1')
+      .where('t1.CATEGORY IN (:...categories)', { categories })
+      .andWhere('t1.END_DATE < :now', { now })
+      .andWhere('t1.PROCESS_STATUS IS NULL')
+      .getMany();
+  }
+
+  async findPrice(sku: string, store: string): Promise<PriceEntity> {
+    return await readConnection
+      .getRepository(PriceEntity)
+      .createQueryBuilder('t1')
+      .where('t1.sku = :sku', { sku })
+      .andWhere('t1.store = :store', { store })
+      .getOne();
+  }
+
   async savePrices(data: PriceEntity | PriceEntity[]): Promise<void> {
     const entities = Array.isArray(data) ? data : [data];
     // Không có giá trị member thì gán N
@@ -78,17 +109,37 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
 
   async updateAppliedList(data: any[]): Promise<void> {
     const promises = [];
-    for (const item of data) {
-      const pros = writeConnection.manager
-        .getRepository(PartnerPriceEntity)
-        .createQueryBuilder()
-        .update()
-        .set({ active: item.active })
-        .where('partnerId = :partnerId', { partnerId: item.partnerId })
-        .andWhere('sku = :sku', { sku: item.sku })
-        .andWhere('store = :store', { store: item.store })
-        .execute();
-      promises.push(pros);
+    if (data[0].partnerId === 5) {
+      for (const item of data) {
+        const sku = await readConnection
+        .getRepository(SkuEntity)
+        .createQueryBuilder('t1')
+        .where('t1.SKU_CODE = :code', { code: item.sku })
+        .getOne();
+        const pros = writeConnection.manager
+          .getRepository(MenuEntity)
+          .createQueryBuilder()
+          .update()
+          .set({ STATUS: !item.active })
+          .where('SKU_ID = :SKU_ID', { SKU_ID: sku.SKU_ID })
+          .andWhere('STORE = :store', { store: item.store })
+          .execute();
+        promises.push(pros);
+      }
+    }
+    else {
+      for (const item of data) {
+        const pros = writeConnection.manager
+          .getRepository(PartnerPriceEntity)
+          .createQueryBuilder()
+          .update()
+          .set({ active: item.active })
+          .where('partnerId = :partnerId', { partnerId: item.partnerId })
+          .andWhere('sku = :sku', { sku: item.sku })
+          .andWhere('store = :store', { store: item.store })
+          .execute();
+        promises.push(pros);
+      }
     }
     await Promise.all(promises);
   }

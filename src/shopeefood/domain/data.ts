@@ -5,7 +5,7 @@ export type DataProperties = Readonly<
   SKU: string;
   STORE: string;
   DESCRIPTION: string;
-  STATUS: number;
+  STATUS: boolean;
   SKU_IMAGE: string;
   SEQUENCE: number;
   }>
@@ -16,7 +16,7 @@ export interface IData {
   SKU: string;
   STORE: string;
   DESCRIPTION: string;
-  STATUS: number;
+  STATUS: boolean;
   SKU_IMAGE: string;
   SEQUENCE: number;
   create: () => void;

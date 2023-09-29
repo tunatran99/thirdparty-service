@@ -17,7 +17,7 @@ import { FindSkuPriceDetailRequestDTO } from './dto/find.sku.price.detail.reques
 import { FindSkuPricesRequestDTO } from './dto/find.sku.prices.request.dto';
 import { UpdateAppliedListRequestDTO } from './dto/update.applied.list.request.dto';
 import { A3PLogInterceptor } from 'libs/a3p.log.interceptor';
-import { NewCronUpdatePrice } from '../application/command/new.cron.update.price';
+import { CronSyncMenu } from '../application/command/cron.sync.menu';
 
 @Controller('sku')
 export class SkuController {
@@ -65,10 +65,10 @@ export class SkuController {
   //   return await this.commandBus.execute(new NewCronUpdatePrice());
   // }
 
-  // @Post('testCron')
-  // async testUpdatePricesCronjob(): Promise<void> {
-  //   return await this.commandBus.execute(new CronUpdatePrice());
-  // }
+  @Post('sync')
+  async syncMenu(@Body('store') store: string): Promise<void> {
+    return await this.commandBus.execute(new CronSyncMenu(store));
+  }
 
   @UseGuards(JwtAuthenticationGuard)
   @Get('listskubypartner')

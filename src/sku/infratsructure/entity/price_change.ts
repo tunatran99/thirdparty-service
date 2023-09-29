@@ -46,4 +46,6 @@ export class PricechangeEntity {
   MODIFIED_DATE: string;
   @Column()
   FILE_ID: string;
+  @Column()
+  PROCESS_STATUS?: string;
 }

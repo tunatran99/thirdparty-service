@@ -43,9 +43,9 @@ export class CategoryQueryImplement implements CategoryQuery {
   };
 
   async selectStoreRecords(id: string): Promise<any> {
-    // if(id !== "1009") {
-    //   throw new HttpException({ message: `Không thể truy cập cửa hàng này` }, HttpStatus.BAD_REQUEST)
-    // }
+    if(id !== "1001") {
+      throw new HttpException({ message: `Không thể truy cập cửa hàng này` }, HttpStatus.BAD_REQUEST)
+    }
     
     let sql = readConnection
       .getRepository(MenuEntity)
@@ -185,10 +185,14 @@ export class CategoryQueryImplement implements CategoryQuery {
             sequence: k.sequence,
             sort_type: 1,
             name: `${k.name} - ${k.id}`,
-            availableStatus: k.availableStatus === 0 ? "AVAILABLE" : "UNAVAILABLE",
+            availableStatus: (k.availableStatus === 0 
+               && 
+               parseInt(k.normalPrice) && parseInt(k.normalPrice) > 500
+               ) ? 
+            "AVAILABLE" : "UNAVAILABLE",
             description: k.description,
-            price: parseInt(k.promoPrice) ? parseInt(k.promoPrice) : parseInt(k.normalPrice) ? parseInt(k.normalPrice) : 30000,
-            photos: /*[`${ip}/${k.filePath}`]*/[k.filePath]
+            price: parseInt(k.normalPrice),
+            photos: k.filePath.includes('https') ? [k.filePath] : [`${ip}/${k.filePath}`]
           }
         })
       }

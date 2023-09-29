@@ -8,7 +8,7 @@ import { PriceService } from 'src/sku/domain/price.service';
 
 @CommandHandler(UpdateAppliedList)
 export class UpdateAppliedListHandler implements ICommandHandler<UpdateAppliedList, void> {
-  constructor(private readonly priceService: PriceService) {}
+  constructor(private readonly priceService: PriceService) { }
 
   @Inject()
   private readonly priceServiceRepo: PriceServiceRepositoryImplement;
@@ -27,6 +27,12 @@ export class UpdateAppliedListHandler implements ICommandHandler<UpdateAppliedLi
       console.log('call MB App');
       // const prices = await this.skuPricesQuery.findPricesByCodes([sku], partnerId);
       // return await this.priceService.callMobileApp(prices);
+      // const promises = [];
+      for (const item of items) {
+        return await this.priceService.syncMenu(item.store);
+        // promises.push(res);
+      }
+      // await Promise.all(promises);
     }
   }
 }

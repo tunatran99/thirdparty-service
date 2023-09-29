@@ -38,8 +38,8 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
   }
 
   async findSkuPriceByPartner(
-    offset = 0,
-    limit = 10,
+    offset: number,
+    limit: number,
     partnerId: number,
     search?: string,
     storeId?: string,
@@ -102,7 +102,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         .where('t3.partnerId = :partnerId', { partnerId });
     }
     if (storeId) {
-      sql = sql.andWhere('t2.store = :storeId', { storeId });
+      sql = sql.andWhere('t2.store in (...:storeId)', { storeId });
     } else {
       sql = sql.select(
         `
@@ -333,7 +333,6 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       .getRawOne();
 
     if (partner.name === "ShopeeFood") {
-      console.log('lô')
       pricesSql = readConnection
         .getRepository(PriceEntity)
         .createQueryBuilder('t1')

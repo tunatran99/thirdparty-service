@@ -26,6 +26,8 @@ services:
       MBAPP_APIKEY: ${MBAPP_APIKEY}
       BOOKINGAPP_HOST: ${BOOKINGAPP_HOST}
       BOOKINGAPP_APIKEY: ${BOOKINGAPP_APIKEY}
+      SHOPEEFOOD_HOST: ${SHOPEEFOOD_HOST}
+      SHOPEEFOOD_SECRET: ${SHOPEEFOOD_SECRET}
       API_CHUNK_SIZE: ${API_CHUNK_SIZE}
     volumes:
       - /datadrive/thirdpartyservice/logs:/usr/src/app/logs
