@@ -50,15 +50,14 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
       .getMany();
   }
 
-  async findExpiredPcBySkus(skus: string[], now: string): Promise<PricechangeEntity[]> {
-    return await readConnection
-      .getRepository(PricechangeEntity)
+  async findCategoryBySku(sku: string): Promise<string> {
+    let foundSku = await readConnection
+      .getRepository(SkuEntity)
       .createQueryBuilder('t1')
-      .where('t1.SKU IN (:...skus)', { skus })
-      .andWhere('t1.STATUS <> "D"')
-      .andWhere('t1.END_DATE < :now', { now })
-      .andWhere('t1.PROCESS_STATUS IS NULL')
-      .getMany();
+      .where('t1.SKU_CODE = :sku', { sku })
+      .getOne();
+
+      return foundSku.CATEGORY_ID;
   }
 
   async findPcByStartdate(startdate: string): Promise<PricechangeEntity[]> {
@@ -77,15 +76,15 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
       .getMany();
   }
 
-  async findExpiredGpcByCategories(categories: string[], now: string): Promise<GroupPricechangeEntity[]> {
-    return await readConnection
-      .getRepository(GroupPricechangeEntity)
-      .createQueryBuilder('t1')
-      .where('t1.CATEGORY IN (:...categories)', { categories })
-      .andWhere('t1.END_DATE < :now', { now })
-      .andWhere('t1.PROCESS_STATUS IS NULL')
-      .getMany();
-  }
+  // async findExpiredGpcByCategories(categories: string[], now: string): Promise<GroupPricechangeEntity[]> {
+  //   return await readConnection
+  //     .getRepository(GroupPricechangeEntity)
+  //     .createQueryBuilder('t1')
+  //     .where('t1.CATEGORY IN (:...categories)', { categories })
+  //     .andWhere('t1.END_DATE < :now', { now })
+  //     .andWhere('t1.PROCESS_STATUS IS NULL')
+  //     .getMany();
+  // }
 
   async findPrice(sku: string, store: string): Promise<PriceEntity> {
     return await readConnection

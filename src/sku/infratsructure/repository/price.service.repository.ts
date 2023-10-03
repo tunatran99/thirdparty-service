@@ -10,9 +10,9 @@ export interface PriceServiceRepository {
   findAndCountSku: (skus?: string[]) => Promise<SkuEntity[]>;
   findIspBySkus: (skus: string[]) => Promise<ItemSellPriceEntity[]>;
   findPcBySkus: (skus: string[]) => Promise<PricechangeEntity[]>;
-  findExpiredPcBySkus: (skus: string[], now: string) => Promise<PricechangeEntity[]>;
+  findCategoryBySku: (sku: string) => Promise<string>;
   findGpcByCategories: (categories: string[]) => Promise<GroupPricechangeEntity[]>;
-  findExpiredGpcByCategories: (categories: string[], now: string) => Promise<GroupPricechangeEntity[]>;
+  // findExpiredGpcByCategories: (categories: string[], now: string) => Promise<GroupPricechangeEntity[]>;
   findPrice: (sku: string, store: string) => Promise<PriceEntity>;
   savePrices: (data: PriceEntity | PriceEntity[]) => Promise<void>;
   findPcByStartdate: (startdate: string) => Promise<PricechangeEntity[]>;

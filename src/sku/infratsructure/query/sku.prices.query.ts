@@ -6,7 +6,7 @@ import { StoreEntity } from '../entity/store';
 import { LineEntity } from 'src/bookingapp/infratsructure/entity/line';
 import { GroupEntity } from 'src/bookingapp/infratsructure/entity/group';
 import { DepartmentEntity } from 'src/bookingapp/infratsructure/entity/department';
-import { CategoryEntity } from 'src/bookingapp/infratsructure/entity/category';
+import { CategoryEntity } from 'src/shopeefood/infratsructure/entity/category';
 import { DivisionEntity } from 'src/bookingapp/infratsructure/entity/division';
 
 export interface SkuPricesQuery {
@@ -16,7 +16,7 @@ export interface SkuPricesQuery {
     limit: number,
     partnerId: number,
     search?: string,
-    storeId?: string,
+    storeId?: string[],
   ) => Promise<FindSkuPricesByPartnerResult>;
   findFilterInfo: () => Promise<{ partners: PartnerEntity[]; stores: StoreEntity[]; 
   lines: LineEntity[]; cates: CategoryEntity[]  }>;
@@ -24,5 +24,6 @@ export interface SkuPricesQuery {
   findGroups: (refId?: string[]) => Promise<any>;
   findDepts: (refId?: string[]) => Promise<any>;
   findCates: (refId?: string[]) => Promise<any>;
+  findCateByCode: (code: string) => Promise<any>;
   findSkuPricesDetail: (partnerId: number, sku: string) => Promise<FindSkuPricesDetailResult>;
 }

@@ -65,8 +65,16 @@ export class SkuController {
   //   return await this.commandBus.execute(new NewCronUpdatePrice());
   // }
 
-  @Post('sync')
+  // @Post('sync')
+  @Cron('0 0 20 * * *', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+  }) // 08:00 PM
   async syncMenu(@Body('store') store: string): Promise<void> {
+    return await this.commandBus.execute(new CronSyncMenu('1001'));
+  }
+
+  @Post('sync')
+  async syncMenuManual(@Body('store') store: string): Promise<void> {
     return await this.commandBus.execute(new CronSyncMenu(store));
   }
 

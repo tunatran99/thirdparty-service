@@ -187,11 +187,14 @@ export class CategoryQueryImplement implements CategoryQuery {
             name: `${k.name} - ${k.id}`,
             availableStatus: (k.availableStatus === 0 
                && 
-               parseInt(k.normalPrice) && parseInt(k.normalPrice) > 500
+               ( parseInt(k.promoPrice) ? (parseInt(k.promoPrice) > 500)
+               :
+               (parseInt(k.normalPrice) > 500)
+               )
                ) ? 
             "AVAILABLE" : "UNAVAILABLE",
             description: k.description,
-            price: parseInt(k.normalPrice),
+            price: parseInt(k.promoPrice) ? parseInt(k.promoPrice) : parseInt(k.normalPrice),
             photos: k.filePath.includes('https') ? [k.filePath] : [`${ip}/${k.filePath}`]
           }
         })

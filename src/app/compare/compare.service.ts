@@ -1084,7 +1084,7 @@ export class CompareService {
           let hasPrice = false;
           let matchSku = false;
           let matchStore = false;
-          let samePrice = false;
+          // let samePrice = false;
           for (const psPrice of psPrices) {
             if (pfPrice.sku == psPrice.sku) {
               matchSku = true;
@@ -1093,7 +1093,7 @@ export class CompareService {
                 const isNormalNaN = Number.isNaN(Number.parseFloat(psPrice.normalPrice));
                 const isPromoNaN = Number.isNaN(Number.parseFloat(psPrice.promoPrice));
                 const isOriPromoNaN = Number.isNaN(Number.parseFloat(psPrice.oriPromoPrice));
-                samePrice = pfPrice.normalPrice === psPrice.normalPrice
+                // samePrice = pfPrice.normalPrice === psPrice.normalPrice
                 if (psPrice.normalPrice !== null && psPrice.normalPrice !== undefined && !isNormalNaN) {
                   hasPrice = true;
                   const psNormal =
@@ -1169,33 +1169,14 @@ export class CompareService {
               ])
               .commit();
           }
-          else if (matchSku) {
-            // count += 1
-
-            if (!matchStore) {
+          else {
+            if (matchSku) {
               // count += 1
-              let anotherMessage = 'Tìm thấy SKU nhưng ko tìm thấy STORE có giá - khả năng thiếu PC và ISP';
-
-              wsMissDept
-                .addRow([
-                  p.store,
-                  p.line,
-                  p.division,
-                  p.group,
-                  p.dept,
-                  p.sku,
-                  p.normalPrice,
-                  p.promoPrice,
-                  p.memberPrice,
-                  p.groupPrice,
-                  anotherMessage,
-                ])
-                .commit();
-            }
-            else {
-              if (samePrice) {
-                let anotherMessage = 'Tìm thấy SKU - STORE nhưng sai giá';
-
+  
+              if (!matchStore) {
+                // count += 1
+                let anotherMessage = 'Tìm thấy SKU nhưng ko tìm thấy STORE có giá - khả năng thiếu PC và ISP';
+  
                 wsMissDept
                   .addRow([
                     p.store,
@@ -1212,9 +1193,28 @@ export class CompareService {
                   ])
                   .commit();
               }
+              // else {
+                // if (samePrice) {
+                //   let anotherMessage = 'Tìm thấy SKU - STORE nhưng sai giá';
+  
+                //   wsMissDept
+                //     .addRow([
+                //       p.store,
+                //       p.line,
+                //       p.division,
+                //       p.group,
+                //       p.dept,
+                //       p.sku,
+                //       p.normalPrice,
+                //       p.promoPrice,
+                //       p.memberPrice,
+                //       p.groupPrice,
+                //       anotherMessage,
+                //     ])
+                //     .commit();
+                // }
+              // }
             }
-          }
-          else {
             if (p.psNormalPrice === null || p.psNormalPrice === undefined) {
               if (p.psPromoPrice === null || p.psPromoPrice === undefined) {
                 // count += 1

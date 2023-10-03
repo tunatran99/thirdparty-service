@@ -7,6 +7,7 @@ import { DownloadPriceToMobile } from '../command/download.price.to.mobile';
 import { SkuPricesQueryImplement } from 'src/sku/infratsructure/query/sku.prices.query.implement';
 import { CompareService } from 'src/app/compare/compare.service';
 import * as ExcelJS from 'exceljs';
+import _ from 'lodash';
 // import * as _ from 'lodash';
 
 @CommandHandler(DownloadPriceToMobile)
@@ -145,10 +146,19 @@ export class DownloadPriceToMobileHandler implements ICommandHandler<DownloadPri
     // }
     // await wb.commit();
     // }
-    const { prices/*, promises*/ } = await this.priceService.calcPrice(skuCodes);
-    /*const pricePromise =*/await this.priceServiceRepo.savePrices(prices);
-    // promises.push(pricePromise)
-    // await Promise.all(promises)
+        // const skuChunks = _.chunk(skuLefts, 25)
+    // let promiseAll = [];
+    // for (const [chunkIndex, skuChunk] of skuChunks.entries()) {
+    //   console.log("Lần loop thứ ", chunkIndex)
+    //   if (chunkIndex > 135) {
+        const { prices, promises } = await this.priceService.calcPrice(skuCodes);
+        const pricePromise = await this.priceServiceRepo.savePrices(prices);
+        // promises.push(pricePromise)
+        // promiseAll = [...promiseAll, ...promises];
+      // }
+      // await Promise.all(promises)
+    // }
+    // await Promise.all(promiseAll)
     try {
       const pricesToSend = await this.skuPricesQuery.findPricesByCodes(skuCodes, 5);
       // await this.priceService.syncMenu('1001');

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min, IsArray } from 'class-validator';
 
 export class FindSkuByPartnerRequestDTO {
   @IsOptional()
@@ -21,7 +21,7 @@ export class FindSkuByPartnerRequestDTO {
   @IsNumber()
   partnerId: number;
   @Type(() => String)
-  @IsString()
+  @IsArray()
   @IsOptional()
-  storeId?: string;
+  storeId?: string[];
 }

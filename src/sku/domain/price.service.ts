@@ -51,7 +51,7 @@ export class PriceService {
     const downloadShopeKEY = environment.SHOPEEFOOD_SECRET;
     const message = "POST|" + downloadShopeeLink + "|" + `{"partner_restaurant_id":"${store}"}`;
 
-    console.log(message);
+    // console.log(message);
 
     const sha256Hash = "Signature " + cryptoJS.HmacSHA256(message, cryptoJS.enc.Hex.parse(downloadShopeKEY)).toString();
     //const sha256Hash = "Signature 515b7e47f6efc0582be7c5d6fce6151d5beb91142a29040600eba32c13120dcb";
@@ -138,9 +138,7 @@ export class PriceService {
   }
 
   async calcPrice(skusParam?: string[], priceDate?: string) {
-    let eligibleStore = ["1001", "1002", "1003", "1004", "1005", "1006", "1008", "1009", "3002", "3003", "3005", "3008", "3011",
-      "3013", "3014", "3015", "3016", "3018", "3019", "3022", "3023", "3024", "3027", "3028", "5109", "5171", "5172", "5174", "5501",
-      "5503", "5804", "5806", "5871", "5872", "5874", "5901", "5173", "5175", "5176", "5873", "5875", "5876", "5902"]
+    let eligibleStore = ["1001"]
     this.logger.log(`${moment().format('DD/MM/YYYY HH:mm:ss')} - Bắt đầu tính giá`);
 
     //Chuẩn bị các config params
@@ -174,7 +172,7 @@ export class PriceService {
 
     //Duyệt 100 skus 1 lần
     const skuChunks = _.chunk(skusParam, 100);
-    // const promises = [];
+    const promises = [];
     for (const [chunkIndex, skuChunk] of skuChunks.entries()) {
       this.logger.log(
         `${moment().format('DD/MM/YYYY HH:mm:ss')} - Tính giá chunk ${chunkIndex + 1}/${skuChunks.length}`,
@@ -186,13 +184,10 @@ export class PriceService {
       const pcSql = this.priceServiceRepo.findPcBySkus(skuChunk);
       const [skus, isps, pcs] = await Promise.all([skuSql, ispSql, pcSql]);
 
-      // console.log(pcs)
-
       if (skus.length === 0) continue;
 
       //Ghép các data đã truy vấn
       for (const sku of skus) {
-        // if(sku.ITEM_SELL_PRICE) console.log(sku.ITEM_SELL_PRICE)
         sku.itemSellPrices = [];
         sku.pricechanges = [];
         for (const ispItem of isps) {
@@ -211,8 +206,6 @@ export class PriceService {
       const skuCategories = _.uniq(skus.map((i) => i.CATEGORY_ID));
       const rawGPC = await this.priceServiceRepo.findGpcByCategories(skuCategories);
 
-      // console.log(rawGPC)
-
       //Mảng grouppricechange
       //Lọc bỏ các record có enddate < ngày hiện tại (hết hạn áp dụng)
       //Sắp xếp lại list theo thứ tự giảm dần theo PC_NO và startdate (mới nhất trước)
@@ -230,11 +223,11 @@ export class PriceService {
         ['desc', 'desc'],
       );
 
-      // const expiredGPCs = rawGPC.filter((i) => {
-      //   if (i.END_DATE && Number.parseInt(i.END_DATE) < Number.parseInt(currDate) && i.PROCESS_STATUS === null) {
-      //     return i;
-      //   }
-      // });
+      const expiredGPCs = rawGPC.filter((i) => {
+        if (i.END_DATE && Number.parseInt(i.END_DATE) < Number.parseInt(currDate)) {
+          return i;
+        }
+      });
 
       // console.log('gpc', grouppricechanges.length)
       // console.log('expiredGPCs', expiredGPCs.length)
@@ -281,7 +274,7 @@ export class PriceService {
         //Lọc bỏ các record có enddate > ngày hiện tại (hết hạn áp dụng)
         //Lọc bỏ TRANS_TYPE = PDCM hoặc PMOM
         //Sắp xếp lại list theo thứ tự giảm dần theo PC_NO và startdate (mới nhất trước)
-        console.log('sku pc', sku.pricechanges.length)
+        // console.log('sku pc', sku.pricechanges.length)
         const pricechanges = _.orderBy(
           sku.pricechanges.filter((i) => {
             if (i.END_DATE && Number.parseInt(i.END_DATE) < Number.parseInt(currDate)) {
@@ -299,11 +292,11 @@ export class PriceService {
           ['desc', 'desc'],
         );
 
-        // const expiredPCs = sku.pricechanges.filter((i) => {
-        //   if (i.END_DATE && Number.parseInt(i.END_DATE) < Number.parseInt(currDate) && i.PROCESS_STATUS === null) {
-        //     return i;
-        //   }
-        // });
+        const expiredPCs = sku.pricechanges.filter((i) => {
+          if (i.END_DATE && Number.parseInt(i.END_DATE) < Number.parseInt(currDate)) {
+            return i;
+          }
+        });
 
         // console.log('pc', pricechanges.length)
         // console.log('expiredPCs', expiredPCs.length)
@@ -313,9 +306,8 @@ export class PriceService {
         for (const store of sku.stores) {
           // if (eligibleStore.includes(store)) {
           //Tạo record giá
-          // let psPrice = await this.priceServiceRepo.findPrice(sku.SKU_CODE, store);
-          // if (!psPrice)
-          const psPrice = readConnection.getRepository(PriceEntity).create({
+          let psPrice = await this.priceServiceRepo.findPrice(sku.SKU_CODE, store);
+          if (!psPrice) /*const*/ psPrice = readConnection.getRepository(PriceEntity).create({
             sku: sku.SKU_CODE,
             store,
             line: sku.LINE_ID,
@@ -364,7 +356,7 @@ export class PriceService {
                 psPrice.pcEndTime = promoPc.DAILY_END_TIME;
                 psPrice.priceFrom = 'pricechange';
 
-                psPrice.normalPrice = promoPc.LAST_SELL_PRICE ?? "0";
+                psPrice.normalPrice = promoPc.LAST_SELL_PRICE ?? '';
                 psPrice.promoPrice = promoPc.NEW_SELL_PRICE;
                 psPrice.startTime = promoPc.START_DATE
                   ? moment(`${promoPc.START_DATE}-${promoPc.DAILY_START_TIME}`, 'YYYYMMDD-HHmmss').toDate()
@@ -373,17 +365,17 @@ export class PriceService {
                   ? moment(`${promoPc.END_DATE}-${promoPc.DAILY_END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                   : null;
 
-                // const promise = writeConnection.manager
-                //   .getRepository(PricechangeEntity)
-                //   .createQueryBuilder()
-                //   .update()
-                //   .set({ PROCESS_STATUS: 'C' })
-                //   .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                //   .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: promoPc.PRICE_CHANGE_NO })
-                //   .andWhere('STORE = :store', { store })
-                //   .execute();
+                const promise = writeConnection.manager
+                  .getRepository(PricechangeEntity)
+                  .createQueryBuilder()
+                  .update()
+                  .set({ PROCESS_STATUS: 'C' })
+                  .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
+                  .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: promoPc.PRICE_CHANGE_NO })
+                  .andWhere('STORE = :store', { store })
+                  .execute();
 
-                // promises.push(promise)
+                promises.push(promise)
               } else {
                 const notEOP = filteredPc.find(
                   (k) =>
@@ -404,7 +396,7 @@ export class PriceService {
                   psPrice.pcNormalEndTime = notEOP.DAILY_END_TIME;
                   psPrice.priceFrom = 'pricechange';
 
-                  psPrice.normalPrice = notEOP.NEW_SELL_PRICE ?? "0";
+                  psPrice.normalPrice = notEOP.NEW_SELL_PRICE ?? '';
                   psPrice.startTime = notEOP.START_DATE
                     ? moment(`${notEOP.START_DATE}-${notEOP.DAILY_START_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                     : null;
@@ -412,17 +404,17 @@ export class PriceService {
                     ? moment(`${notEOP.END_DATE}-${notEOP.DAILY_END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                     : null;
 
-                  // const promise = writeConnection.manager
-                  //   .getRepository(PricechangeEntity)
-                  //   .createQueryBuilder()
-                  //   .update()
-                  //   .set({ PROCESS_STATUS: 'C' })
-                  //   .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                  //   .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: notEOP.PRICE_CHANGE_NO })
-                  //   .andWhere('STORE = :store', { store })
-                  //   .execute();
+                  const promise = writeConnection.manager
+                    .getRepository(PricechangeEntity)
+                    .createQueryBuilder()
+                    .update()
+                    .set({ PROCESS_STATUS: 'C' })
+                    .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
+                    .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: notEOP.PRICE_CHANGE_NO })
+                    .andWhere('STORE = :store', { store })
+                    .execute();
 
-                  // promises.push(promise)
+                  promises.push(promise)
                 } else {
                   psPrice.pcNormal = pc.PRICE_CHANGE_NO;
                   psPrice.pcNormalStatus = pc.STATUS;
@@ -436,7 +428,7 @@ export class PriceService {
                   psPrice.pcNormalEndTime = pc.DAILY_END_TIME;
                   psPrice.priceFrom = 'pricechange';
 
-                  psPrice.normalPrice = pc.NEW_SELL_PRICE ?? "0";
+                  psPrice.normalPrice = pc.NEW_SELL_PRICE ?? '';
                   psPrice.startTime = pc.START_DATE
                     ? moment(`${pc.START_DATE}-${pc.DAILY_START_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                     : null;
@@ -444,17 +436,17 @@ export class PriceService {
                     ? moment(`${pc.END_DATE}-${pc.DAILY_END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                     : null;
 
-                  // const promise = writeConnection.manager
-                  //   .getRepository(PricechangeEntity)
-                  //   .createQueryBuilder()
-                  //   .update()
-                  //   .set({ PROCESS_STATUS: 'C' })
-                  //   .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                  //   .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: pc.PRICE_CHANGE_NO })
-                  //   .andWhere('STORE = :store', { store })
-                  //   .execute();
+                  const promise = writeConnection.manager
+                    .getRepository(PricechangeEntity)
+                    .createQueryBuilder()
+                    .update()
+                    .set({ PROCESS_STATUS: 'C' })
+                    .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
+                    .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: pc.PRICE_CHANGE_NO })
+                    .andWhere('STORE = :store', { store })
+                    .execute();
 
-                  // promises.push(promise)
+                  promises.push(promise)
                 }
               }
             } else if (['MKU', 'MKD'].includes(pc.TRANS_TYPE)) {
@@ -470,7 +462,7 @@ export class PriceService {
               psPrice.pcNormalEndTime = pc.DAILY_END_TIME;
               psPrice.priceFrom = 'pricechange';
 
-              psPrice.normalPrice = pc.NEW_SELL_PRICE ?? "0";
+              psPrice.normalPrice = pc.NEW_SELL_PRICE ?? '';
               psPrice.startTime = pc.START_DATE
                 ? moment(`${pc.START_DATE}-${pc.DAILY_START_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                 : null;
@@ -504,30 +496,30 @@ export class PriceService {
                   ? moment(`${promoPc.END_DATE}-${promoPc.DAILY_END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                   : null;
 
-                // const promise = writeConnection.manager
-                //   .getRepository(PricechangeEntity)
-                //   .createQueryBuilder()
-                //   .update()
-                //   .set({ PROCESS_STATUS: 'C' })
-                //   .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                //   .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: promoPc.PRICE_CHANGE_NO })
-                //   .andWhere('STORE = :store', { store })
-                //   .execute();
+                const promise = writeConnection.manager
+                  .getRepository(PricechangeEntity)
+                  .createQueryBuilder()
+                  .update()
+                  .set({ PROCESS_STATUS: 'C' })
+                  .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
+                  .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: promoPc.PRICE_CHANGE_NO })
+                  .andWhere('STORE = :store', { store })
+                  .execute();
 
-                // promises.push(promise)
+                promises.push(promise)
               }
               else {
-                // const promise = writeConnection.manager
-                //   .getRepository(PricechangeEntity)
-                //   .createQueryBuilder()
-                //   .update()
-                //   .set({ PROCESS_STATUS: 'C' })
-                //   .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                //   .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: pc.PRICE_CHANGE_NO })
-                //   .andWhere('STORE = :store', { store })
-                //   .execute();
+                const promise = writeConnection.manager
+                  .getRepository(PricechangeEntity)
+                  .createQueryBuilder()
+                  .update()
+                  .set({ PROCESS_STATUS: 'C' })
+                  .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
+                  .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: pc.PRICE_CHANGE_NO })
+                  .andWhere('STORE = :store', { store })
+                  .execute();
 
-                // promises.push(promise)
+                promises.push(promise)
               }
             } else {
               psPrice.pcNo = pc.PRICE_CHANGE_NO;
@@ -543,7 +535,7 @@ export class PriceService {
               psPrice.pcEndTime = pc.DAILY_END_TIME;
               psPrice.priceFrom = 'pricechange';
 
-              psPrice.normalPrice = pc.LAST_SELL_PRICE ?? "0";
+              psPrice.normalPrice = pc.LAST_SELL_PRICE ?? '';
               psPrice.promoPrice = pc.NEW_SELL_PRICE;
               psPrice.startTime = pc.START_DATE
                 ? moment(`${pc.START_DATE}-${pc.DAILY_START_TIME}`, 'YYYYMMDD-HHmmss').toDate()
@@ -570,32 +562,32 @@ export class PriceService {
                 psPrice.pcNormalEndTime = mkumkd.DAILY_END_TIME;
                 psPrice.priceFrom = 'pricechange';
 
-                psPrice.normalPrice = mkumkd.NEW_SELL_PRICE ?? "0";
+                psPrice.normalPrice = mkumkd.NEW_SELL_PRICE ?? '';
 
-                // const promise = writeConnection.manager
-                //   .getRepository(PricechangeEntity)
-                //   .createQueryBuilder()
-                //   .update()
-                //   .set({ PROCESS_STATUS: 'C' })
-                //   .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                //   .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: mkumkd.PRICE_CHANGE_NO })
-                //   .andWhere('STORE = :store', { store })
-                //   .execute();
+                const promise = writeConnection.manager
+                  .getRepository(PricechangeEntity)
+                  .createQueryBuilder()
+                  .update()
+                  .set({ PROCESS_STATUS: 'C' })
+                  .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
+                  .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: mkumkd.PRICE_CHANGE_NO })
+                  .andWhere('STORE = :store', { store })
+                  .execute();
 
-                // promises.push(promise)
+                promises.push(promise)
               }
               else {
-                // const promise = writeConnection.manager
-                //   .getRepository(PricechangeEntity)
-                //   .createQueryBuilder()
-                //   .update()
-                //   .set({ PROCESS_STATUS: 'C' })
-                //   .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                //   .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: pc.PRICE_CHANGE_NO })
-                //   .andWhere('STORE = :store', { store })
-                //   .execute();
+                const promise = writeConnection.manager
+                  .getRepository(PricechangeEntity)
+                  .createQueryBuilder()
+                  .update()
+                  .set({ PROCESS_STATUS: 'C' })
+                  .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
+                  .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: pc.PRICE_CHANGE_NO })
+                  .andWhere('STORE = :store', { store })
+                  .execute();
 
-                // promises.push(promise)
+                promises.push(promise)
               }
             }
           }
@@ -605,7 +597,7 @@ export class PriceService {
             const isp = itemsellprices.find((i) => i.STORE === psPrice.store);
             if (isp) {
               // psPrice.normalPrice = isp.CURRENT_PRICE;
-              psPrice.normalPrice = isp.CURRENT_PRICE ?? "0"
+              psPrice.normalPrice = isp.CURRENT_PRICE ?? ''
               psPrice.priceFrom = 'itemsellprice';
 
               //Lấy grouppricechane có store, category phù hợp và startdate nhỏ hơn hoặc bằng ngày hiện tại
@@ -639,70 +631,20 @@ export class PriceService {
                   ? moment(`${gpc.END_DATE}-${gpc.END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                   : null;
 
-                // const promise = writeConnection.manager
-                //   .getRepository(GroupPricechangeEntity)
-                //   .createQueryBuilder()
-                //   .update()
-                //   .set({ PROCESS_STATUS: 'C' })
-                //   .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                //   .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: gpc.PRICE_CHANGE_NO })
-                //   .andWhere('STORE = :store', { store })
-                //   .execute();
+                const category = await this.priceServiceRepo.findCategoryBySku(sku.SKU_CODE);
 
-                // promises.push(promise)
+                const promise = writeConnection.manager
+                  .getRepository(GroupPricechangeEntity)
+                  .createQueryBuilder()
+                  .update()
+                  .set({ PROCESS_STATUS: 'C' })
+                  .where('CATEGORY = :category', { category })
+                  .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: gpc.PRICE_CHANGE_NO })
+                  .andWhere('STORE = :store', { store })
+                  .execute();
+
+                promises.push(promise)
               }
-              /*else {
-                const lastUpdate = moment(psPrice.lastUpdate).format('YYYYMMDD')'20230928'
-                if (psPrice.promoPrice && Number.parseInt(lastUpdate) < Number.parseInt(currDate)) {
-                  const gpc = expiredGPCs.find(
-                    (i) =>
-                      i.STORE === psPrice.store &&
-                      i.CATEGORY === psPrice.category
-                  );
-
-                  if (gpc) {
-                    psPrice.startTime = null;
-                    psPrice.endTime = null;
-                    psPrice.promoPrice = null;
-
-                    const promise = writeConnection.manager
-                      .getRepository(GroupPricechangeEntity)
-                      .createQueryBuilder()
-                      .update()
-                      .set({ PROCESS_STATUS: 'C' })
-                      .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                      .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: gpc.PRICE_CHANGE_NO })
-                      .andWhere('STORE = :store', { store })
-                      .execute();
-
-                    promises.push(promise)
-                  }
-                  else {
-                    const pc = expiredPCs.find(
-                      (i) =>
-                        i.STORE === psPrice.store
-                    );
-
-                    if (pc) {
-                      psPrice.startTime = null;
-                      psPrice.endTime = null;
-                      psPrice.promoPrice = null;
-
-                      const promise = writeConnection.manager
-                        .getRepository(PricechangeEntity)
-                        .createQueryBuilder()
-                        .update()
-                        .set({ PROCESS_STATUS: 'C' })
-                        .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
-                        .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: pc.PRICE_CHANGE_NO })
-                        .andWhere('STORE = :store', { store })
-                        .execute();
-
-                      promises.push(promise)
-                    }
-                  }
-                }
-              }*/
             }
             else {
               remainStores.push(store)
@@ -748,6 +690,58 @@ export class PriceService {
               //     }
               //   }
             }
+            const lastUpdate = moment(psPrice.lastUpdate).format('YYYYMMDD')/*'20230928'*/
+            if (psPrice.promoPrice) {
+              const gpc = expiredGPCs.find(
+                (i) =>
+                  i.STORE === psPrice.store &&
+                  i.CATEGORY === psPrice.category
+              );
+
+              if (gpc) {
+                psPrice.startTime = null;
+                psPrice.endTime = null;
+                psPrice.promoPrice = null;
+
+                const category = await this.priceServiceRepo.findCategoryBySku(sku.SKU_CODE);
+
+                const promise = writeConnection.manager
+                  .getRepository(GroupPricechangeEntity)
+                  .createQueryBuilder()
+                  .update()
+                  .set({ PROCESS_STATUS: 'C' })
+                  .where('CATEGORY = :category', { category })
+                  .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: gpc.PRICE_CHANGE_NO })
+                  .andWhere('STORE = :store', { store })
+                  .execute();
+
+                promises.push(promise)
+              }
+              else {
+                const pc = expiredPCs.find(
+                  (i) =>
+                    i.STORE === psPrice.store
+                );
+
+                if (pc) {
+                  psPrice.startTime = null;
+                  psPrice.endTime = null;
+                  psPrice.promoPrice = null;
+
+                  const promise = writeConnection.manager
+                    .getRepository(PricechangeEntity)
+                    .createQueryBuilder()
+                    .update()
+                    .set({ PROCESS_STATUS: 'C' })
+                    .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
+                    .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: pc.PRICE_CHANGE_NO })
+                    .andWhere('STORE = :store', { store })
+                    .execute();
+
+                  promises.push(promise)
+                }
+              }
+            }
           }
           if (isActiveMemberDay) {
             if (psPrice.member === 'Y') {
@@ -768,15 +762,15 @@ export class PriceService {
               psPrice.memberMark = true;
             }
           }
+
           if (psPrice.normalPrice) psPrices.push(psPrice);
           // }
         } // Kết thúc loop store
         for (const store of remainStores) {
           // if (eligibleStore.includes(store)) {
           //Tạo record giá
-          // let psPrice = await this.priceServiceRepo.findPrice(sku.SKU_CODE, store);
-          // if (!psPrice) 
-          const psPrice = readConnection.getRepository(PriceEntity).create({
+          let psPrice = await this.priceServiceRepo.findPrice(sku.SKU_CODE, store);
+          if (!psPrice) /*const*/ psPrice = readConnection.getRepository(PriceEntity).create({
             sku: sku.SKU_CODE,
             store,
             line: sku.LINE_ID,
@@ -790,11 +784,11 @@ export class PriceService {
             uomVn: uomVn,
           });
 
-          psPrice.normalPrice = sku.ITEM_SELL_PRICE ?? "0"
+          psPrice.normalPrice = sku.ITEM_SELL_PRICE ?? ''
           psPrice.priceFrom = 'bi_itemsellprice';
 
-          /*const lastUpdate = moment(psPrice.lastUpdate).format('YYYYMMDD')
-          if (psPrice.promoPrice && Number.parseInt(lastUpdate) < Number.parseInt(currDate)) {
+          const lastUpdate = moment(psPrice.lastUpdate).format('YYYYMMDD')
+          if (psPrice.promoPrice) {
             const gpc = expiredGPCs.find(
               (i) =>
                 i.STORE === psPrice.store &&
@@ -806,12 +800,14 @@ export class PriceService {
               psPrice.endTime = null;
               psPrice.promoPrice = null;
 
+              const category = await this.priceServiceRepo.findCategoryBySku(sku.SKU_CODE);
+
               const promise = writeConnection.manager
                 .getRepository(GroupPricechangeEntity)
                 .createQueryBuilder()
                 .update()
                 .set({ PROCESS_STATUS: 'C' })
-                .where('SKU = :skuCode', { skuCode: sku.SKU_CODE })
+                .where('CATEGORY = :category', { category })
                 .andWhere('PRICE_CHANGE_NO = :pcNo', { pcNo: gpc.PRICE_CHANGE_NO })
                 .andWhere('STORE = :store', { store })
                 .execute();
@@ -821,8 +817,7 @@ export class PriceService {
             else {
               const pc = expiredPCs.find(
                 (i) =>
-                  i.STORE === psPrice.store &&
-                  i.SKU === psPrice.sku
+                  i.STORE === psPrice.store
               );
 
               if (pc) {
@@ -843,7 +838,7 @@ export class PriceService {
                 promises.push(promise)
               }
             }
-          }*/
+          }
 
           if (isActiveMemberDay) {
             if (psPrice.member === 'Y') {
@@ -873,6 +868,6 @@ export class PriceService {
         // }
       } // Kết thúc loop sku
     }
-    return { prices: psPrices, errors/*, promises*/ };
+    return { prices: psPrices, errors, promises };
   }
 }

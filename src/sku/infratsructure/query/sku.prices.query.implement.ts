@@ -9,7 +9,7 @@ import { StoreEntity } from '../entity/store';
 import { LineEntity } from 'src/bookingapp/infratsructure/entity/line';
 import { GroupEntity } from 'src/bookingapp/infratsructure/entity/group';
 import { DepartmentEntity } from 'src/bookingapp/infratsructure/entity/department';
-import { CategoryEntity } from 'src/bookingapp/infratsructure/entity/category';
+import { CategoryEntity } from 'src/shopeefood/infratsructure/entity/category';
 import { DivisionEntity } from 'src/bookingapp/infratsructure/entity/division';
 
 export class SkuPricesQueryImplement implements SkuPricesQuery {
@@ -42,7 +42,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     limit: number,
     partnerId: number,
     search?: string,
-    storeId?: string,
+    storeId?: string[],
     lineId?: string,
     groupId?: string,
     deptId?: string,
@@ -71,7 +71,8 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       t2.normalPrice as "normalPrice",
       t2.promoPrice as "promoPrice",
       t2.startTime as "startTime",
-      t2.endTime as "endTime"
+      t2.endTime as "endTime",
+      t2.store as "store"
       `,
         )
         .leftJoin('ps_price', 't2', 't1.SKU_CODE = t2.sku')
@@ -94,7 +95,8 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       t2.normalPrice as "normalPrice",
       t2.promoPrice as "promoPrice",
       t2.startTime as "startTime",
-      t2.endTime as "endTime"
+      t2.endTime as "endTime",
+      t2.store as "store"
       `,
         )
         .leftJoin('ps_price', 't2', 't1.SKU_CODE = t2.sku')
@@ -102,7 +104,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         .where('t3.partnerId = :partnerId', { partnerId });
     }
     if (storeId) {
-      sql = sql.andWhere('t2.store in (...:storeId)', { storeId });
+      sql = sql.andWhere('t2.store in (:...storeId)', { storeId });
     } else {
       sql = sql.select(
         `
@@ -115,7 +117,8 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
-      ANY_VALUE(t2.endTime) as "endTime"
+      ANY_VALUE(t2.endTime) as "endTime",
+      ANY_VALUE(t2.store) as "store"
         `,
       );
       sql = sql.groupBy('t1.SKU_CODE');
@@ -134,7 +137,8 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
-      ANY_VALUE(t2.endTime) as "endTime"
+      ANY_VALUE(t2.endTime) as "endTime",
+      ANY_VALUE(t2.store) as "store"
         `,
       );
       sql = sql.groupBy('t1.SKU_CODE');
@@ -153,7 +157,8 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
-      ANY_VALUE(t2.endTime) as "endTime"
+      ANY_VALUE(t2.endTime) as "endTime",
+      ANY_VALUE(t2.store) as "store"
         `,
       );
       sql = sql.groupBy('t1.SKU_CODE');
@@ -172,13 +177,19 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
-      ANY_VALUE(t2.endTime) as "endTime"
+      ANY_VALUE(t2.endTime) as "endTime",
+      ANY_VALUE(t2.store) as "store"
         `,
       );
       sql = sql.groupBy('t1.SKU_CODE');
     }
     if (cateId) {
-      sql = sql.andWhere('t2.category = :cateId', { cateId });
+      if (partner.name === "ShopeeFood") {
+        let id = await this.findCateByCode(cateId);
+        sql = sql.andWhere('t3.category_id = :id', { id });
+      }
+      else
+        sql = sql.andWhere('t2.category = :cateId', { cateId });
     } else {
       sql = sql.select(
         `
@@ -191,7 +202,8 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
-      ANY_VALUE(t2.endTime) as "endTime"
+      ANY_VALUE(t2.endTime) as "endTime",
+      ANY_VALUE(t2.store) as "store"
         `,
       );
       sql = sql.groupBy('t1.SKU_CODE');
@@ -294,7 +306,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     let sql = readConnection.getRepository(CategoryEntity).createQueryBuilder('t1')
       .select(
         `
-    t1.CATEGORY_ID,
+    t1.CATEGORY_CODE,
     t1.CATEGORY_NAME
     `,
       )
@@ -304,6 +316,18 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
 
     const [items] = await Promise.all([sql.getRawMany()]);
     return items;
+  }
+  async findCateByCode(code: string): Promise<any> {
+    let item = await readConnection.getRepository(CategoryEntity).createQueryBuilder('t1')
+      .select(
+        `
+    t1.id
+    `,
+      )
+      .where('t1.CATEGORY_CODE = :code', { code })
+      .getOne();
+
+    return item.id;
   }
 
   async findSkuPricesDetail(partnerId: number, sku: string): Promise<any> {
