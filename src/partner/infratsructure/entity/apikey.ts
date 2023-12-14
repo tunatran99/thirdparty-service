@@ -3,7 +3,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity, CommonEntity } from '@libs/base.entity';
 import { PartnerEntity } from './partner';
 
-@Entity({ name: 'ps_partner_apikey', synchronize: true })
+@Entity({ name: 'ps_partner_apikey', synchronize: false })
 export class ApikeyEntity extends BaseEntity {
   @Column()
   key: string;

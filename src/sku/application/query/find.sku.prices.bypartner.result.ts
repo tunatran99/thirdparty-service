@@ -11,6 +11,9 @@ export class FindSkuPricesByPartnerResult implements IQueryResult {
     readonly promotionPrice: string;
     readonly startDate: string;
     readonly endDate: string;
+    readonly futurePromotionPrice: string;
+    readonly futureStartDate: string;
+    readonly futureEndDate: string;
   }>[];
   readonly total: number;
 }

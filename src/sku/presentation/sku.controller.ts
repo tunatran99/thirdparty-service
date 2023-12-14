@@ -7,7 +7,7 @@ import { RequestWithPartner } from 'src/user/presentation/dto/requested.partner.
 import { CronUpdatePrice } from '../application/command/cron.update.price';
 import { DownloadPriceToMobile } from '../application/command/download.price.to.mobile';
 import { UpdateAppliedList } from '../application/command/update.applied.list';
-import { FindCategory, FindDepartment, FindDivision, FindFilterInfoQuery, FindGroup } from '../application/query/find.filter.info.query';
+import { FindCategory, FindDepartment, FindDivision, FindFilterInfoQuery, FindGroup, FindStore } from '../application/query/find.filter.info.query';
 import { FindSkuPricesByCodesQuery } from '../application/query/find.sku.prices.bycodes.query';
 import { FindSkuPricesByCodesResult } from '../application/query/find.sku.prices.bycodes.result';
 import { FindSkuPricesByPartnerQuery } from '../application/query/find.sku.prices.bypartner.query';
@@ -18,6 +18,11 @@ import { FindSkuPricesRequestDTO } from './dto/find.sku.prices.request.dto';
 import { UpdateAppliedListRequestDTO } from './dto/update.applied.list.request.dto';
 import { A3PLogInterceptor } from 'libs/a3p.log.interceptor';
 import { CronSyncMenu } from '../application/command/cron.sync.menu';
+import { ImportImageLink } from '../application/command/import.image.link.command';
+import { CheckImportImageLink } from '../application/query/check.import.image.link.query';
+import { CheckImportImageLinkResult } from '../application/query/check.import.image.link.result';
+import { CheckImportImageDTO } from './dto/check.import.image.query.dto';
+import { SaveImageLinkRequestDTO } from './dto/save.image.link.request.dto';
 
 @Controller('sku')
 export class SkuController {
@@ -69,12 +74,12 @@ export class SkuController {
   @Cron('0 0 20 * * *', {
     timeZone: 'Asia/Ho_Chi_Minh',
   }) // 08:00 PM
-  async syncMenu(@Body('store') store: string): Promise<void> {
-    return await this.commandBus.execute(new CronSyncMenu('1001'));
+  async syncMenu(@Body('store') store?: string): Promise<void> {
+    return await this.commandBus.execute(new CronSyncMenu());
   }
 
   @Post('sync')
-  async syncMenuManual(@Body('store') store: string): Promise<void> {
+  async syncMenuManual(@Body('store') store?: string): Promise<void> {
     return await this.commandBus.execute(new CronSyncMenu(store));
   }
 
@@ -86,8 +91,14 @@ export class SkuController {
 
   @UseGuards(JwtAuthenticationGuard)
   @Get('getfilterinfos')
-  async getFilterInfos() {
-    return await this.queryBus.execute(new FindFilterInfoQuery());
+  async getFilterInfos(@Query('partners') partners?: string[]) {
+    return await this.queryBus.execute(new FindFilterInfoQuery(partners));
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Get('getstores')
+  async getStores(@Query('stores') stores?: string[], @Query('refId') refId?: number) {
+    return await this.queryBus.execute(new FindStore(stores, refId));
   }
 
   @UseGuards(JwtAuthenticationGuard)
@@ -131,5 +142,16 @@ export class SkuController {
       i.partnerId = Number.parseInt(i.partnerId as unknown as string);
     });
     return await this.commandBus.execute(new UpdateAppliedList(body.items));
+  }
+
+  @Post('import/image-link/check')
+  async CheckImportImageLink(@Body() body: CheckImportImageDTO): Promise<CheckImportImageLinkResult> {
+    const q = new CheckImportImageLink(body.sku, body.partner);
+    return await this.queryBus.execute(q);
+  }
+  @Post('import/image-link')
+  async ImportImageLink(@Body() body: SaveImageLinkRequestDTO[]): Promise<void> {
+    const command = new ImportImageLink(body);
+    await this.commandBus.execute(command);
   }
 }

@@ -9,10 +9,27 @@ import { UomEntity } from '../entity/uom';
 import { PriceServiceRepository } from './price.service.repository';
 import { StoreEntity } from '../entity/store';
 import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
+import { SkuCodeTempEntity } from '../entity/sku_code_temp';
+import { MBPriceEntity } from '../entity/mb_price';
 
 export class PriceServiceRepositoryImplement implements PriceServiceRepository {
   async findUom(): Promise<UomEntity[]> {
     return await readConnection.getRepository(UomEntity).createQueryBuilder('t1').getMany();
+  }
+
+  async findSkuInMenu(skus: string[]): Promise<SkuEntity[]> {
+    // console.log(readConnection.getRepository(SkuEntity).createQueryBuilder('t1')
+    // .select('t1.SKU_CODE')
+    // .distinct(true)
+    // .innerJoin('spf_menu', 't2', 't1.SKU_ID = t2.SKU_ID')
+    // .where('t1.SKU_CODE in (:...skus)', { skus }).getQuery());
+    return await readConnection.getRepository(SkuEntity).createQueryBuilder('t1')
+    .select('t1.SKU_CODE')
+    .distinct(true)
+    .innerJoin('spf_menu', 't2', 't1.SKU_ID = t2.SKU_ID')
+    .where('t1.SKU_CODE in (:...skus)', { skus })
+    .getMany();
+    // return null;
   }
 
   async findStore(): Promise<StoreEntity[]> {
@@ -68,6 +85,14 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
       .getMany();
   }
 
+  async findPcByEnddate(enddate: string): Promise<PricechangeEntity[]> {
+    return await readConnection
+      .getRepository(PricechangeEntity)
+      .createQueryBuilder('t1')
+      .where('t1.END_DATE = :enddate', { enddate })
+      .getMany();
+  }
+
   async findGpcByCategories(categories: string[]): Promise<GroupPricechangeEntity[]> {
     return await readConnection
       .getRepository(GroupPricechangeEntity)
@@ -76,15 +101,14 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
       .getMany();
   }
 
-  // async findExpiredGpcByCategories(categories: string[], now: string): Promise<GroupPricechangeEntity[]> {
-  //   return await readConnection
-  //     .getRepository(GroupPricechangeEntity)
-  //     .createQueryBuilder('t1')
-  //     .where('t1.CATEGORY IN (:...categories)', { categories })
-  //     .andWhere('t1.END_DATE < :now', { now })
-  //     .andWhere('t1.PROCESS_STATUS IS NULL')
-  //     .getMany();
-  // }
+  async findMemberPrices(): Promise<PriceEntity[]> {
+    return await readConnection
+      .getRepository(PriceEntity)
+      .createQueryBuilder('t1')
+      .select('t1.sku', 'sku')
+      .where("t1.member = 'Y'")
+      .getMany();
+  }
 
   async findPrice(sku: string, store: string): Promise<PriceEntity> {
     return await readConnection
@@ -104,6 +128,22 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
       }
     });
     await writeConnection.manager.getRepository(PriceEntity).save(entities);
+  }
+
+  async saveMBPrices(data: MBPriceEntity | MBPriceEntity[]): Promise<void> {
+    const entities = Array.isArray(data) ? data : [data];
+    // Không có giá trị member thì gán N
+    entities.forEach((i) => {
+      if (!i.member) {
+        i.member = 'N';
+      }
+    });
+    await writeConnection.manager.getRepository(MBPriceEntity).save(entities);
+  }
+
+  async saveMenuPrices(data: SkuCodeTempEntity | SkuCodeTempEntity[]): Promise<void> {
+    const entities = Array.isArray(data) ? data : [data];
+    await writeConnection.manager.getRepository(SkuCodeTempEntity).save(entities)
   }
 
   async updateAppliedList(data: any[]): Promise<void> {

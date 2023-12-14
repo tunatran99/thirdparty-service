@@ -2,7 +2,8 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FindFilterInfoQuery, FindCategory,
   FindDepartment,
   FindDivision,
-  FindGroup } from '../query/find.filter.info.query';
+  FindGroup, 
+  FindStore} from '../query/find.filter.info.query';
 import { Inject } from '@nestjs/common';
 import { FindFilterInfoResult } from '../query/find.filter.info.result';
 import { SkuPricesQueryImplement } from 'src/sku/infratsructure/query/sku.prices.query.implement';
@@ -12,15 +13,24 @@ export class FindFilterInfoQueryHandler implements IQueryHandler<FindFilterInfoQ
   @Inject()
   private readonly skuPricesQuery: SkuPricesQueryImplement;
 
-  async execute(): Promise<FindFilterInfoResult> {
-    const { partners, stores, lines, cates } = await this.skuPricesQuery.findFilterInfo();
+  async execute({ partnerId }: FindFilterInfoQuery): Promise<FindFilterInfoResult> {
+    const { partners, lines, cates } = await this.skuPricesQuery.findFilterInfo(partnerId);
 
     return {
       partners,
-      stores,
       lines,
       cates
     };
+  }
+}
+
+@QueryHandler(FindStore)
+export class FindStoreHandler implements IQueryHandler<FindStore, any> {
+  @Inject()
+  private readonly skuPricesQuery: SkuPricesQueryImplement;
+
+  async execute(q: FindStore): Promise<any> {
+    return await this.skuPricesQuery.findStores(q.refId, q.storeId);
   }
 }
 

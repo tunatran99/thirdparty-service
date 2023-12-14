@@ -35,6 +35,11 @@ import { CategoryEntity as CategoryThirdPartyEntity } from 'src/shopeefood/infra
 import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
 import { GroupEntity } from 'src/bookingapp/infratsructure/entity/group';
 import { DivisionEntity } from 'src/bookingapp/infratsructure/entity/division';
+import { SkuCodeTempEntity } from 'src/sku/infratsructure/entity/sku_code_temp';
+import { MBPriceEntity } from 'src/sku/infratsructure/entity/mb_price';
+import { RoleEntity } from 'src/role/infratsructure/entity/role';
+import { PermissionEntity } from 'src/role/infratsructure/entity/permission';
+import { SkuImageLinkEntity } from 'src/sku/infratsructure/entity/sku_image_link';
 
 interface WriteConnection {
   readonly startTransaction: (
@@ -89,7 +94,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       CategoryThirdPartyEntity,
       MenuEntity,
       GroupEntity,
-      DivisionEntity
+      DivisionEntity,
+      SkuCodeTempEntity,
+      MBPriceEntity,
+      RoleEntity,
+      PermissionEntity,
+      SkuImageLinkEntity
     ],
     charset: 'utf8mb4_unicode_ci',
     host: environment.DB_HOST,

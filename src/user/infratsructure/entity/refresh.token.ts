@@ -3,7 +3,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity, CommonEntity } from '@libs/base.entity';
 import { UserEntity } from './user';
 
-@Entity({ name: 'ps_user_refresh_token', synchronize: true })
+@Entity({ name: 'ps_user_refresh_token', synchronize: false })
 export class UserRefreshTokenEntity extends BaseEntity {
   @Column()
   tokenId: string;

@@ -12,6 +12,8 @@ import { SkuModule } from './sku/sku.module';
 import { LogModule } from './log/log.module';
 import { ShopeefoodModule } from './shopeefood/shopeefood.module';
 import { CompareModule } from './app/compare/compare.module';
+import { RoleModule } from './role/role.module';
+import { MasterdataModule } from './masterdata/masterdata.module';
 
 @Module({
   imports: [
@@ -28,7 +30,9 @@ import { CompareModule } from './app/compare/compare.module';
     LogModule,
     SkuModule,
     ShopeefoodModule,
-    CompareModule
+    CompareModule,
+    RoleModule,
+    MasterdataModule
   ],
   controllers: [AppController],
   providers: [],

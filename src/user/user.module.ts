@@ -12,9 +12,12 @@ import { RefreshTokenRepositoryImplement } from './infratsructure/repository/ref
 import { JwtRefreshTokenStrategy } from './authentication/strategies/jwt-refresh.strategy';
 import { ApiKeyStrategy } from './authentication/strategies/apikey.strategy';
 import { CreateRefreshTokenHandler } from './application/command-handler/create.refresh.token.handler';
-import { UserQueryImplement } from './infratsructure/query/sku.prices.query.implement';
+import { UserQueryImplement } from './infratsructure/query/user.query.implement';
 import { FindProfileHandler } from './application/query-handler/find.profile.handler';
 import { UpdateUserHandler } from './application/command-handler/update.user.handler';
+import { FindAllHandler } from './application/query-handler/find.all.handler';
+import { UpdateUserStatusHandler } from './application/command-handler/update.user.status.handler';
+import { UpdateUserPassHandler } from './application/command-handler/update.pass.handler';
 
 const infrastructure = [UserRepositoryImplement, RefreshTokenRepositoryImplement, UserQueryImplement];
 
@@ -24,6 +27,9 @@ const application = [
   CreateRefreshTokenHandler,
   FindProfileHandler,
   UpdateUserHandler,
+  FindAllHandler,
+  UpdateUserStatusHandler,
+  UpdateUserPassHandler
 ];
 
 const domain = [UserFactory, RefreshTokenFactory];

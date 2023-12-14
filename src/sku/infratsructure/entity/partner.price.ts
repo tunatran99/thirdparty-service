@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity({ name: 'ps_partner_price', synchronize: true })
+@Entity({ name: 'ps_partner_price', synchronize: false })
 export class PartnerPriceEntity {
   @PrimaryColumn()
   partnerId: number;

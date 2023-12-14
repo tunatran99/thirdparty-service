@@ -4,7 +4,7 @@ import { BaseEntity, CommonEntity } from '@libs/base.entity';
 import { ApikeyEntity } from './apikey';
 import { IpWhitelistEntity } from './ipwhitelist';
 
-@Entity({ name: 'ps_partner', synchronize: true })
+@Entity({ name: 'ps_partner', synchronize: false })
 export class PartnerEntity extends BaseEntity {
   @Column()
   name: string;

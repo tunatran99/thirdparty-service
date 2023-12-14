@@ -7,6 +7,8 @@ import { PriceServiceRepositoryImplement } from 'src/sku/infratsructure/reposito
 import { CronUpdatePrice } from '../command/cron.update.price';
 import * as ExcelJS from 'exceljs';
 import * as _ from 'lodash';
+import { readConnection } from '@libs/database.module';
+import { SkuCodeTempEntity } from 'src/sku/infratsructure/entity/sku_code_temp';
 
 @CommandHandler(CronUpdatePrice)
 export class CronUpdatePriceHandler implements ICommandHandler<CronUpdatePrice, void> {
@@ -17,265 +19,61 @@ export class CronUpdatePriceHandler implements ICommandHandler<CronUpdatePrice, 
 
   @Transactional()
   async execute(): Promise<void> {
+    let now = moment();
+    const isBefore18h = moment().isBefore(now.hour(18));
+    const is04or19 = now.format('DD') === '04' || now.format('DD') === '19';
+    const is05or20 = now.format('DD') === '05' || now.format('DD') === '20';
+    const isActiveMemberDay = (is04or19 && !isBefore18h) || (is05or20 && isBefore18h);
+
     const tomorrowDate = moment().add('1', 'day').format('YYYYMMDD');
+    // const now = moment().format('YYYYMMDD');
     const tomorrowPcs = await this.priceServiceRepo.findPcByStartdate(tomorrowDate);
+    const expiredPcs = await this.priceServiceRepo.findPcByEnddate(now.format('YYYYMMDD'));
+    
+    let tomorrowSkus: string[], expSkus: string[];
+    if (expiredPcs && expiredPcs.length > 0) expSkus = expiredPcs.map((i) => i.SKU);
+    
     if (tomorrowPcs && tomorrowPcs.length > 0) {
-      const tomorrowSkus = tomorrowPcs.map((i) => i.SKU);
-      const { prices } = await this.priceService.calcPrice(tomorrowSkus, tomorrowDate);
-      // const chunks = _.chunk(prices, 10);
-      // for (const [chunkIndex, chunk] of chunks.entries()) {
-      //   // if (chunkIndex > 5) continue;
-      //   console.log(
-      //     `${moment().format('DD/MM/YYYY HH:mm:ss')} - Insert chunk ${chunkIndex + 1}/${chunks.length} ...`,
-      //   );
-      //   await this.priceServiceRepo.savePrices(chunk)
-      //   console.log(
-      //     `${moment().format('DD/MM/YYYY HH:mm:ss')} - Inserted ${chunkIndex + 1}/${chunks.length} chunk`,
-      //   );
-      // }
-      //   const wbs = {},
-      //   wss = {};
-      //   for (const price of prices) {
-      //     if (!wbs[price.dept]) {
-      //       wbs[price.dept] = new ExcelJS.stream.xlsx.WorkbookWriter({
-      //         filename: `src/newsku/${price.dept}.xlsx`,
-      //       });
-      //       wss[price.dept] = wbs[price.dept].addWorksheet();
-      //       wss[price.dept]
-      //         .addRow([
-      //           'sku',
-      //           'store',
-      //           'line',
-      //           'division',
-      //           'group',
-      //           'dept',
-      //           'category',
-      //           'status',
-      //           'member',
-      //           'uomEn',
-      //           'uomVn',
-      //           'normalPrice',
-      //           'promoPrice',
-      //           'oriPromoPrice',
-      //           'startTime',
-      //           'endTime',
-      //           'memberMark',
-      //           'pcNo',
-      //           'pcStatus',
-      //           'pcTransType',
-      //           'pcType',
-      //           'pcTypeValue',
-      //           'pcPrice',
-      //           'pcStartDate',
-      //           'pcEndDate',
-      //           'pcStartTime',
-      //           'pcEndTime',
-      //           'pcNormal',
-      //           'pcNormalStatus',
-      //           'pcNormalTransType',
-      //           'pcNormalType',
-      //           'pcNormalTypeValue',
-      //           'pcNormalPrice',
-      //           'pcNormalStartDate',
-      //           'pcNormalEndDate',
-      //           'pcNormalStartTime',
-      //           'pcNormalEndTime',
-      //           'gpcNo',
-      //           'gpcStatus',
-      //           'gpcTransType',
-      //           'gpcType',
-      //           'gpcTypeValue',
-      //           'gpcPrice',
-      //           'gpcStartDate',
-      //           'gpcEndDate',
-      //           'gpcStartTime',
-      //           'gpcEndTime',
-      //           'priceFrom',
-      //         ])
-      //         .commit();
+      tomorrowSkus = tomorrowPcs.map((i) => i.SKU);
+      // const { prices } = await this.priceService.calcPrice(tomorrowSkus, tomorrowDate, false);
+      // try {
+      //   const realPricesToSend = prices.map(price => {
+      //     if (isActiveMemberDay) {
+      //       if (price.member === 'Y') {
+      //         if (price.promoPrice) {
+      //           const memprice = (Number.parseFloat(price.promoPrice) * 95.0) / 100;
+      //           price.promoPrice = memprice.toFixed(2);
+      //         } else {
+      //           const memprice = (Number.parseFloat(price.normalPrice) * 95.0) / 100;
+      //           price.promoPrice = memprice.toFixed(2);
+      //         }
+  
+      //         return price;
+      //       }
       //     }
-      //     wss[price.dept]
-      //       .addRow([
-      //         price.sku,
-      //         price.store,
-      //         price.line,
-      //         price.division,
-      //         price.group,
-      //         price.dept,
-      //         price.category,
-      //         price.status,
-      //         price.member,
-      //         price.uomEn,
-      //         price.uomVn,
-      //         price.normalPrice,
-      //         price.promoPrice,
-      //         price.oriPromoPrice,
-      //         price.startTime,
-      //         price.endTime,
-      //         price.memberMark,
-      //         price.pcNo,
-      //         price.pcStatus,
-      //         price.pcTransType,
-      //         price.pcType,
-      //         price.pcTypeValue,
-      //         price.pcPrice,
-      //         price.pcStartDate,
-      //         price.pcEndDate,
-      //         price.pcStartTime,
-      //         price.pcEndTime,
-      //         price.pcNormal,
-      //         price.pcNormalStatus,
-      //         price.pcNormalTransType,
-      //         price.pcNormalType,
-      //         price.pcNormalTypeValue,
-      //         price.pcNormalPrice,
-      //         price.pcNormalStartDate,
-      //         price.pcNormalEndDate,
-      //         price.pcNormalStartTime,
-      //         price.pcNormalEndTime,
-      //         price.gpcNo,
-      //         price.gpcStatus,
-      //         price.gpcTransType,
-      //         price.gpcType,
-      //         price.gpcTypeValue,
-      //         price.gpcPrice,
-      //         price.gpcStartDate,
-      //         price.gpcEndDate,
-      //         price.gpcStartTime,
-      //         price.gpcEndTime,
-      //         price.priceFrom,
-      //       ])
-      //       .commit();
-      //   }
-
-      // for (const key of Object.keys(wbs)) {
-      //   await wbs[key].commit();
+  
+      //     return price;
+      //   });
+      //   await this.priceService.callMobileApp(realPricesToSend);
       // }
-      //   const { prices } = await this.priceService.calcPrice(skuCodes);
-      // const wb = new ExcelJS.stream.xlsx.WorkbookWriter({
-      //   filename: `src/newsku/9993.xlsx`,
-      // });
-      // const ws = wb.addWorksheet();
-      // ws.addRow([
-      //   'sku',
-      //   'store',
-      //   'line',
-      //   'division',
-      //   'group',
-      //   'dept',
-      //   'category',
-      //   'status',
-      //   'member',
-      //   'uomEn',
-      //   'uomVn',
-
-      //   'normal price',
-      //   'promo price',
-      //   'ori promo price',
-      //   'start time',
-      //   'end time',
-      //   'member mark',
-
-      //   'pc no',
-      //   'pc status',
-      //   'pc trans type',
-      //   'pc type',
-      //   'pc type value',
-      //   'pc price',
-      //   'pc start date',
-      //   'pc end start',
-      //   'pc start time',
-      //   'pc end time',
-
-      //   'pc normal',
-      //   'pc normal status',
-      //   'pc normal trans type',
-      //   'pc normal type',
-      //   'pc normal type value',
-      //   'pc normal price',
-      //   'pc normal start date',
-      //   'pc normal end date',
-      //   'pc normal start time',
-      //   'pc normal end time',
-
-      //   'gpc no',
-      //   'gpc status',
-      //   'gpc trans type',
-      //   'gpc type',
-      //   'gpc type value',
-      //   'gpc price',
-      //   'gpc start date',
-      //   'gpc end date',
-      //   'gpc start time',
-      //   'gpc end time',
-
-      //   'price from',
-      // ]).commit();
-      // for (const price of prices) {
-      //   ws.addRow([
-      //     price.sku,
-      //     price.store,
-      //     price.line,
-      //     price.division,
-      //     price.group,
-      //     price.dept,
-      //     price.category,
-      //     price.status,
-      //     price.member,
-      //     price.uomEn,
-      //     price.uomVn,
-
-      //     price.normalPrice,
-      //     price.promoPrice,
-      //     price.oriPromoPrice,
-      //     price.startTime,
-      //     price.endTime,
-      //     price.memberMark,
-
-      //     price.pcNo,
-      //     price.pcStatus,
-      //     price.pcTransType,
-      //     price.pcType,
-      //     price.pcTypeValue,
-      //     price.pcPrice,
-      //     price.pcStartDate,
-      //     price.pcEndDate,
-      //     price.pcStartTime,
-      //     price.pcEndTime,
-
-      //     price.pcNormal,
-      //     price.pcNormalStatus,
-      //     price.pcNormalTransType,
-      //     price.pcNormalType,
-      //     price.pcNormalTypeValue,
-      //     price.pcNormalPrice,
-      //     price.pcNormalStartDate,
-      //     price.pcNormalEndDate,
-      //     price.pcNormalStartTime,
-      //     price.pcNormalEndTime,
-
-      //     price.gpcNo,
-      //     price.gpcStatus,
-      //     price.gpcTransType,
-      //     price.gpcType,
-      //     price.gpcTypeValue,
-      //     price.gpcPrice,
-      //     price.gpcStartDate,
-      //     price.gpcEndDate,
-      //     price.gpcStartTime,
-      //     price.gpcEndTime,
-
-      //     price.priceFrom,
-      //   ]).commit();
+      // catch (err) {
+      //   console.log(err);
       // }
-      // await wb.commit();
-      // await this.priceServiceRepo.savePrices(prices);
-      try {
-        await this.priceService.callMobileApp(prices);
+    }
+    
+    const validSkus = [...tomorrowSkus, ...expSkus];
+    const tomorrowMenu = await this.priceServiceRepo.findSkuInMenu(validSkus);
+
+    if (tomorrowMenu && tomorrowMenu.length > 0) {
+      console.log('Cập nhật giá các SKU:', JSON.stringify(tomorrowMenu.map(menu => menu.SKU_CODE)))
+      const skuTemps: SkuCodeTempEntity[] = [];
+
+      for(const menu of tomorrowMenu) {
+        const skuTemp = readConnection.getRepository(SkuCodeTempEntity).create({ SKU_CODE: menu.SKU_CODE });
+        skuTemps.push(skuTemp)
       }
-      catch (err) {
-        console.log(err);
-      }
+      // console.log(skuTemps)
+      await this.priceServiceRepo.saveMenuPrices(skuTemps);
     }
   }
 }

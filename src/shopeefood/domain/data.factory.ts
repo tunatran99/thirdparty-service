@@ -1,40 +1,32 @@
+import { UtilityImplement } from "@libs/utility.module";
+import { Inject } from "@nestjs/common";
+import { EventPublisher } from "@nestjs/cqrs";
+import { IData, DataImplement, DataProperties } from "./data";
 
 type createDataOptions = Readonly<{
-  Category_ID: string;
-  Category_Name_Level_1: string;
-  Category_Name_Level_2: string;
-  Category_Name_Level_3: string;
-  SKU: string;
-  productName: string;
-  UOM: string;
-  price: string;
-  promoPrice: string;
-  storeId: string;
-  description: string;
-  DELETED: number;
+  CATEGORY_ID: number;
+  SKU_ID: number;
+  STORE: string;
+  DESCRIPTION: string;
+  STATUS: number;
+  SKU_IMAGE: string;
+  SEQUENCE: number;
+  SPF_DISH_ID: number;
 }>;
 
-// export class DataFactory {
-//   @Inject(EventPublisher) private readonly eventPublisher: EventPublisher;
-//   @Inject() private readonly util: UtilityImplement;
+export class DataFactory {
+  @Inject(EventPublisher) private readonly eventPublisher: EventPublisher;
+  @Inject() private readonly util: UtilityImplement;
 
-//   create(options: createDataOptions): IData {
-//     const common = {
-//       createdAt: new Date(),
-//       createdById: null,
-//       updatedAt: null,
-//       updatedById: null,
-//       isDisabled: false,
-//       version: 0,
-//     };
-//     return this.eventPublisher.mergeObjectContext(
-//       new DataImplement({
-//         ...options
-//       }),
-//     );
-//   }
+  create(options: createDataOptions): IData {
+    return this.eventPublisher.mergeObjectContext(
+      new DataImplement({
+        ...options
+      }),
+    );
+  }
 
-//   reconstitute(properties: DataProperties): IData {
-//     return this.eventPublisher.mergeObjectContext(new DataImplement(properties));
-//   }
-// }
+  reconstitute(properties: DataProperties): IData {
+    return this.eventPublisher.mergeObjectContext(new DataImplement(properties));
+  }
+}

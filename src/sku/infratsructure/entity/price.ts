@@ -35,11 +35,19 @@ export class PriceEntity {
   startTime: Date;
   @Column({ nullable: true })
   endTime: Date;
+  @Column({ nullable: true })
+  futurePromoPrice: string;
+  @Column({ nullable: true })
+  futureStartTime: Date;
+  @Column({ nullable: true })
+  futureEndTime: Date;
   @Column({ default: false })
   memberMark: boolean;
 
   @Column({ nullable: true })
   pcNo: string;
+  @Column({ nullable: true })
+  futurePCNo: string;
   @Column({ nullable: true })
   pcStatus?: string;
   @Column({ nullable: true })
@@ -82,6 +90,8 @@ export class PriceEntity {
 
   @Column({ nullable: true })
   gpcNo: string;
+  @Column({ nullable: true })
+  futureGPCNo: string;
   @Column({ nullable: true })
   gpcStatus: string;
   @Column({ nullable: true })

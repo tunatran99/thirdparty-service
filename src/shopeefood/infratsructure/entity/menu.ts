@@ -12,9 +12,11 @@ export class MenuEntity extends BaseEntity {
   @Column({ nullable: true })
   DESCRIPTION?: string;
   @Column({ nullable: true })
-  STATUS?: boolean;
+  STATUS?: number;
   @Column({ nullable: true })
   SKU_IMAGE?: string;
   @Column({ nullable: true })
   SEQUENCE?: number;
+  @Column({ nullable: true })
+  SPF_DISH_ID?: number;
 }

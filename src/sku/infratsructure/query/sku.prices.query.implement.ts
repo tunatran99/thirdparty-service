@@ -11,11 +11,13 @@ import { GroupEntity } from 'src/bookingapp/infratsructure/entity/group';
 import { DepartmentEntity } from 'src/bookingapp/infratsructure/entity/department';
 import { CategoryEntity } from 'src/shopeefood/infratsructure/entity/category';
 import { DivisionEntity } from 'src/bookingapp/infratsructure/entity/division';
+import { MBPriceEntity } from '../entity/mb_price';
+import { CheckImportImageLinkResult } from 'src/sku/application/query/check.import.image.link.result';
 
 export class SkuPricesQueryImplement implements SkuPricesQuery {
-  async findPricesByCodes(codes: string[], partnerId: number): Promise<PriceEntity[]> {
+  async findPricesByCodes(codes: string[], partnerId: number): Promise<MBPriceEntity[]> {
     let sqlByPartner = readConnection
-      .getRepository(PriceEntity)
+      .getRepository(MBPriceEntity)
       .createQueryBuilder('t2')
       .leftJoin('ps_partner_price', 't3', 't2.sku = t3.sku AND t2.store = t3.store AND t3.partnerId = :partnerId', {
         partnerId,
@@ -29,12 +31,32 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     const skusNotRelated = codes.filter((i) => !byPartnerData.map((i) => i.sku).includes(i));
     if (skusNotRelated && skusNotRelated.length > 0) {
       skusNotRelatedData = await readConnection
-        .getRepository(PriceEntity)
+        .getRepository(MBPriceEntity)
         .createQueryBuilder('t1')
         .where('t1.sku IN (:...skusNotRelated)', { skusNotRelated })
         .getMany();
     }
     return [...byPartnerData, ...skusNotRelatedData];
+  }
+
+  async findIdByCode(code: string): Promise<number> {
+    const item = await readConnection
+      .getRepository(SkuEntity)
+      .createQueryBuilder('t1').select('t1.SKU_ID', 'skuId')
+      .where('t1.SKU_CODE = :code', { code })
+      .getRawOne();
+
+    return item.skuId
+  }
+
+  async findIdByName(name: string): Promise<number> {
+    const item = await readConnection
+      .getRepository(PartnerEntity)
+      .createQueryBuilder('t1').select('t1.id', 'partnerId')
+      .where('LOWER(t1.name) = :name', { name })
+      .getRawOne();
+
+    return item.partnerId;
   }
 
   async findSkuPriceByPartner(
@@ -46,7 +68,11 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     lineId?: string,
     groupId?: string,
     deptId?: string,
-    cateId?: string
+    cateId?: string,
+    hasPromo?: string,
+    isExporting?: boolean,
+    fromDate?: string,
+    toDate?: string
   ): Promise<FindSkuPricesByPartnerResult> {
     let sql: SelectQueryBuilder<SkuEntity>;
     let partner = await readConnection.getRepository(PartnerEntity)
@@ -54,7 +80,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       .where('t1.id = :partnerId', { partnerId })
       .getOne();
 
-    if (partner.name === "ShopeeFood") {
+    if (partner.name === 'DB') {
       sql = readConnection
         .getRepository(SkuEntity)
         .createQueryBuilder('t1')
@@ -65,7 +91,6 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       t1.SKU_ID as id,
       t1.SKU_CODE as sku,
       t1.ITEM_DESC_VNM as "nameEn",
-      t1.POP2_DESC_VNM as "nameVn",
       t1.RETAIL_UOM as "uomEn",
       t1.POP3_DESC_VNM as "uomVn",
       t2.normalPrice as "normalPrice",
@@ -73,6 +98,32 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       t2.startTime as "startTime",
       t2.endTime as "endTime",
       t2.store as "store"
+      `,
+        )
+        .leftJoin('ps_price', 't2', 't1.SKU_CODE = t2.sku')
+    }
+    else if (partner.name.toLocaleLowerCase() === "shopeefood") {
+      sql = readConnection
+        .getRepository(SkuEntity)
+        .createQueryBuilder('t1')
+        .offset(offset)
+        .limit(limit)
+        .select(
+          `
+      t1.SKU_ID as id,
+      t1.SKU_CODE as sku,
+      t1.ITEM_DESC_VNM as "nameEn",
+      t1.RETAIL_UOM as "uomEn",
+      t1.POP3_DESC_VNM as "uomVn",
+      t2.normalPrice as "normalPrice",
+      t2.promoPrice as "promoPrice",
+      t2.startTime as "startTime",
+      t2.endTime as "endTime",
+      t2.store as "store",
+      t2.futurePromoPrice as "futurePromoPrice",
+      t2.futureStartTime as "futureStartTime",
+      t2.futureEndTime as "futureEndTime",
+      t3.SPF_DISH_ID as "SPF_DISH_ID"
       `,
         )
         .leftJoin('ps_price', 't2', 't1.SKU_CODE = t2.sku')
@@ -89,14 +140,16 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       t1.SKU_ID as id,
       t1.SKU_CODE as sku,
       t1.ITEM_DESC_VNM as "nameEn",
-      t1.POP2_DESC_VNM as "nameVn",
       t1.RETAIL_UOM as "uomEn",
       t1.POP3_DESC_VNM as "uomVn",
       t2.normalPrice as "normalPrice",
       t2.promoPrice as "promoPrice",
       t2.startTime as "startTime",
       t2.endTime as "endTime",
-      t2.store as "store"
+      t2.store as "store",
+      t2.futurePromoPrice as "futurePromoPrice",
+      t2.futureStartTime as "futureStartTime",
+      t2.futureEndTime as "futureEndTime"
       `,
         )
         .leftJoin('ps_price', 't2', 't1.SKU_CODE = t2.sku')
@@ -111,17 +164,22 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t1.SKU_ID) as id,
       ANY_VALUE(t1.SKU_CODE) as sku,
       ANY_VALUE(t1.ITEM_DESC_VNM) as "nameEn",
-      ANY_VALUE(t1.POP2_DESC_VNM) as "nameVn",
       ANY_VALUE(t1.RETAIL_UOM) as "uomEn",
       ANY_VALUE(t1.POP3_DESC_VNM) as "uomVn",
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
       ANY_VALUE(t2.endTime) as "endTime",
-      ANY_VALUE(t2.store) as "store"
+      ANY_VALUE(t2.store) as "store",
+      ANY_VALUE(t2.futurePromoPrice) as "futurePromoPrice",
+      ANY_VALUE(t2.futureStartTime) as "futureStartTime",
+      ANY_VALUE(t2.futureEndTime) as "futureEndTime"
         `,
       );
-      sql = sql.groupBy('t1.SKU_CODE');
+      if (partner.name.toLocaleLowerCase() === "shopeefood") {
+        sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
+      }
+      !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
     if (lineId) {
       sql = sql.andWhere('t2.line = :lineId', { lineId });
@@ -131,17 +189,22 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t1.SKU_ID) as id,
       ANY_VALUE(t1.SKU_CODE) as sku,
       ANY_VALUE(t1.ITEM_DESC_VNM) as "nameEn",
-      ANY_VALUE(t1.POP2_DESC_VNM) as "nameVn",
       ANY_VALUE(t1.RETAIL_UOM) as "uomEn",
       ANY_VALUE(t1.POP3_DESC_VNM) as "uomVn",
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
       ANY_VALUE(t2.endTime) as "endTime",
-      ANY_VALUE(t2.store) as "store"
+      ANY_VALUE(t2.store) as "store",
+      ANY_VALUE(t2.futurePromoPrice) as "futurePromoPrice",
+      ANY_VALUE(t2.futureStartTime) as "futureStartTime",
+      ANY_VALUE(t2.futureEndTime) as "futureEndTime"
         `,
       );
-      sql = sql.groupBy('t1.SKU_CODE');
+      if (partner.name.toLocaleLowerCase() === "shopeefood") {
+        sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
+      }
+      !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
     if (groupId) {
       sql = sql.andWhere('t2.group = :groupId', { groupId });
@@ -151,17 +214,22 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t1.SKU_ID) as id,
       ANY_VALUE(t1.SKU_CODE) as sku,
       ANY_VALUE(t1.ITEM_DESC_VNM) as "nameEn",
-      ANY_VALUE(t1.POP2_DESC_VNM) as "nameVn",
       ANY_VALUE(t1.RETAIL_UOM) as "uomEn",
       ANY_VALUE(t1.POP3_DESC_VNM) as "uomVn",
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
       ANY_VALUE(t2.endTime) as "endTime",
-      ANY_VALUE(t2.store) as "store"
+      ANY_VALUE(t2.store) as "store",
+      ANY_VALUE(t2.futurePromoPrice) as "futurePromoPrice",
+      ANY_VALUE(t2.futureStartTime) as "futureStartTime",
+      ANY_VALUE(t2.futureEndTime) as "futureEndTime"
         `,
       );
-      sql = sql.groupBy('t1.SKU_CODE');
+      if (partner.name.toLocaleLowerCase() === "shopeefood") {
+        sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
+      }
+      !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
     if (deptId) {
       sql = sql.andWhere('t2.dept = :deptId', { deptId });
@@ -171,20 +239,25 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t1.SKU_ID) as id,
       ANY_VALUE(t1.SKU_CODE) as sku,
       ANY_VALUE(t1.ITEM_DESC_VNM) as "nameEn",
-      ANY_VALUE(t1.POP2_DESC_VNM) as "nameVn",
       ANY_VALUE(t1.RETAIL_UOM) as "uomEn",
       ANY_VALUE(t1.POP3_DESC_VNM) as "uomVn",
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
       ANY_VALUE(t2.endTime) as "endTime",
-      ANY_VALUE(t2.store) as "store"
+      ANY_VALUE(t2.store) as "store",
+      ANY_VALUE(t2.futurePromoPrice) as "futurePromoPrice",
+      ANY_VALUE(t2.futureStartTime) as "futureStartTime",
+      ANY_VALUE(t2.futureEndTime) as "futureEndTime"
         `,
       );
-      sql = sql.groupBy('t1.SKU_CODE');
+      if (partner.name.toLocaleLowerCase() === "shopeefood") {
+        sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
+      }
+      !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
     if (cateId) {
-      if (partner.name === "ShopeeFood") {
+      if (partner.name.toLocaleLowerCase() === "shopeefood") {
         let id = await this.findCateByCode(cateId);
         sql = sql.andWhere('t3.category_id = :id', { id });
       }
@@ -196,17 +269,42 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       ANY_VALUE(t1.SKU_ID) as id,
       ANY_VALUE(t1.SKU_CODE) as sku,
       ANY_VALUE(t1.ITEM_DESC_VNM) as "nameEn",
-      ANY_VALUE(t1.POP2_DESC_VNM) as "nameVn",
       ANY_VALUE(t1.RETAIL_UOM) as "uomEn",
       ANY_VALUE(t1.POP3_DESC_VNM) as "uomVn",
       ANY_VALUE(t2.normalPrice) as "normalPrice",
       ANY_VALUE(t2.promoPrice) as "promoPrice",
       ANY_VALUE(t2.startTime) as "startTime",
       ANY_VALUE(t2.endTime) as "endTime",
-      ANY_VALUE(t2.store) as "store"
+      ANY_VALUE(t2.store) as "store",
+      ANY_VALUE(t2.futurePromoPrice) as "futurePromoPrice",
+      ANY_VALUE(t2.futureStartTime) as "futureStartTime",
+      ANY_VALUE(t2.futureEndTime) as "futureEndTime"
         `,
       );
-      sql = sql.groupBy('t1.SKU_CODE');
+      if (partner.name.toLocaleLowerCase() === "shopeefood") {
+        sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
+      }
+      !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
+    }
+    if (isExporting) {
+      sql = sql.addSelect(
+        `
+      ANY_VALUE(t2.futurePromoPrice) as "futurePromoPrice",
+      ANY_VALUE(t2.futureStartTime) as "futureStartTime",
+      ANY_VALUE(t2.futureEndTime) as "futureEndTime"
+      `
+      )
+      if (partner.name.toLocaleLowerCase() === "shopeefood") {
+        sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
+      }
+    }
+    if (hasPromo) {
+      if (hasPromo === 'Y') {
+        sql = sql.andWhere('t2.promoPrice is not null')
+      }
+      else {
+        sql = sql.andWhere('t2.promoPrice is null')
+      }
     }
     if (search) {
       sql = sql.andWhere(
@@ -221,7 +319,9 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         }),
       );
     }
-    console.log(sql.getQuery())
+    if (fromDate && toDate) {
+      sql = sql.andWhere(`date_format(t2.futureStartTime,'%Y-%m-%d') between :fromDate and :toDate`, { fromDate, toDate })
+    }
     const items = await sql.getRawMany();
     return {
       items: items.map((i) => {
@@ -237,23 +337,47 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     };
   }
 
-  async findFilterInfo(): Promise<{
-    partners: PartnerEntity[]; stores: StoreEntity[];
-    lines: LineEntity[]; cates: CategoryEntity[]
+  async findFilterInfo(partnerId?: string[]): Promise<{
+    partners: PartnerEntity[]; lines: LineEntity[]; cates: CategoryEntity[]
   }> {
-    const partnerSql = readConnection.getRepository(PartnerEntity).createQueryBuilder('t1').getMany();
-    const storeSql = readConnection.getRepository(StoreEntity).createQueryBuilder('t1').getMany();
+    // console.log(partnerId)
+    let partnerSql = readConnection.getRepository(PartnerEntity).createQueryBuilder('t1');
+    if (partnerId) {
+      let newPartnerId = partnerId.map(id => {
+        return parseInt(id, 10);
+      })
+      partnerSql = partnerSql.where('t1.id in (:...newPartnerId)', { newPartnerId })
+    }
     const lineSql = readConnection.getRepository(LineEntity).createQueryBuilder('t1').getMany();
     const cateSql = readConnection.getRepository(CategoryEntity).createQueryBuilder('t1').getMany();
-    const [partners, stores, lines, cates] = await Promise.all([
-      partnerSql, storeSql, lineSql, cateSql
+    const [partners, lines, cates] = await Promise.all([
+      partnerSql.getMany(), lineSql, cateSql
     ]);
     return {
       partners,
-      stores,
       lines,
       cates
     };
+  }
+
+  async findStores(refId?: number, storeId?: string[]): Promise<any> {
+    let sql = readConnection.getRepository(StoreEntity).createQueryBuilder('t1')
+    if (refId) {
+      let partner = await readConnection.getRepository(PartnerEntity)
+        .createQueryBuilder('t1')
+        .where('t1.id = :refId', { refId })
+        .getOne();
+
+      if (partner.name.toLowerCase() === 'shopeefood') {
+        sql = sql.innerJoin('spf_menu', 't2', 't1.STORE_ID = t2.store')
+      }
+    }
+    if (storeId) {
+      sql = sql.where('t1.STORE_ID in (:...storeId)', { storeId })
+    }
+
+    const [items] = await Promise.all([sql.orderBy('t1.STORE_NUMBER', 'ASC').getMany()]);
+    return items;
   }
 
   async findDivs(refId?: string[]): Promise<any> {
@@ -265,7 +389,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     `,
       )
     if (refId) {
-      sql = sql.andWhere('t1.LINE_ID IN (:...refId)', { refId });
+      sql = sql.where('t1.LINE_ID IN (:...refId)', { refId });
     }
 
     const [items] = await Promise.all([sql.getRawMany()]);
@@ -281,7 +405,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     `,
       )
     if (refId) {
-      sql = sql.andWhere('t1.DIV_ID IN (:...refId)', { refId });
+      sql = sql.where('t1.DIV_ID IN (:...refId)', { refId });
     }
 
     const [items] = await Promise.all([sql.getRawMany()]);
@@ -296,7 +420,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     `,
       )
     if (refId) {
-      sql = sql.andWhere('t1.GROUP_ID IN (:...refId)', { refId });
+      sql = sql.where('t1.GROUP_ID IN (:...refId)', { refId });
     }
 
     const [items] = await Promise.all([sql.getRawMany()]);
@@ -311,7 +435,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     `,
       )
     if (refId) {
-      sql = sql.andWhere('t1.DEPT_ID IN (:...refId)', { refId });
+      sql = sql.where('t1.DEPT_ID IN (:...refId)', { refId });
     }
 
     const [items] = await Promise.all([sql.getRawMany()]);
@@ -328,6 +452,79 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       .getOne();
 
     return item.id;
+  }
+
+  async checkImportImageLink(sku: string, partner: string): Promise<CheckImportImageLinkResult> {
+    const data = await readConnection
+      .getRepository(SkuEntity)
+      .createQueryBuilder('t1')
+      .select(
+        `
+    t1.SKU_ID as "skuId",
+    t1.SKU_CODE as "skuCode",
+    t2.id as id,
+    t2.url as url,
+    t3.name as partner
+    `,
+      )
+      .leftJoin('pop_sku_image_link', 't2', 't1.SKU_ID = t2.skuId')
+      .leftJoin('ps_partner', 't3', 't2.partnerId = t3.id')
+      .where('t1.SKU_CODE = :sku', { sku })
+      .getRawMany();
+
+    const create = [];
+    const update = [];
+    const error = [];
+    let count = 0;
+    // let found = false;
+    if (data) {
+      for (const item of data) {
+        // if (item.skuCode === sku) {
+        // found = true;
+        item.id = Number.parseInt(item.id);
+        item.skuId = Number.parseInt(item.skuId);
+        if (item.url) {
+          if (item.partner.toLowerCase() === partner.toLowerCase()) {
+            update.push({
+              id: item.id,
+              skuId: item.skuId,
+              skuCode: item.skuCode,
+              url: item.url,
+              partner
+            });
+          }
+          else {
+            count++;
+          }
+        } else {
+          create.push({
+            skuId: item.skuId,
+            skuCode: item.skuCode,
+            partner
+          });
+        }
+        // }
+      }
+      if (count === data.length) {
+        create.push({
+          skuId: Number.parseInt(data[0].skuId),
+          skuCode: sku,
+          partner
+        });
+      }
+    }
+    else {
+      error.push({
+        skuCode: sku,
+      });
+    }
+
+
+    return {
+      create,
+      update,
+      error,
+    };
   }
 
   async findSkuPricesDetail(partnerId: number, sku: string): Promise<any> {
@@ -356,7 +553,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       .where('t1.SKU_CODE = :sku', { sku })
       .getRawOne();
 
-    if (partner.name === "ShopeeFood") {
+    if (partner.name.toLocaleLowerCase() === "shopeefood") {
       pricesSql = readConnection
         .getRepository(PriceEntity)
         .createQueryBuilder('t1')
@@ -411,7 +608,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         ...price,
         normalPrice: parseInt(price.normalPrice),
         promoPrice: parseInt(price.promoPrice),
-        active: partner.name === "ShopeeFood" ? (price.active === 0 ? true : false) : price.active
+        active: partner.name.toLocaleLowerCase() === "shopeefood" ? (price.active === 0 ? true : false) : price.active
       }
     });
     return skuEntity;

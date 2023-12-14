@@ -4,10 +4,11 @@ import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { CategoryEntity } from '../entity/category';
 import { Brackets } from 'typeorm';
+import moment from 'moment';
 
 export class CategoryQueryImplement implements CategoryQuery {
   async find(search?: string, offset?: number, limit?: number): Promise<any> {
-    let sql = await readConnection
+    let sql = readConnection
       .getRepository(CategoryEntity)
       .createQueryBuilder('t1');
 
@@ -43,7 +44,7 @@ export class CategoryQueryImplement implements CategoryQuery {
   };
 
   async selectStoreRecords(id: string): Promise<any> {
-    if(id !== "1001") {
+    if(parseInt(id) > 1008) {
       throw new HttpException({ message: `Không thể truy cập cửa hàng này` }, HttpStatus.BAD_REQUEST)
     }
     
@@ -163,14 +164,16 @@ export class CategoryQueryImplement implements CategoryQuery {
             "availableStatus", t1.STATUS,
             "sequence", t1.SEQUENCE,
             "description", t1.description,
+            "member", t5.member,
             "promoPrice", t5.promoPrice,
             "normalPrice", t5.normalPrice,
+            "oriPromoPrice", t5.oriPromoPrice,
             "filePath", ifnull(t6.url, t7.filePath)
           )
         )`,
         'items',
       )
-      .where('t1.CATEGORY_ID in (:...cates) and t1.STORE = :store', { cates, store });
+      .where('t1.CATEGORY_ID in (:...cates) and t1.STORE = :store and t6.partnerId = 5', { cates, store });
       // console.log(sql.groupBy('t1.CATEGORY_ID').getQuery())
     const data = await sql.groupBy('t1.CATEGORY_ID').getRawMany();
     return data.map((i) => {
@@ -187,15 +190,12 @@ export class CategoryQueryImplement implements CategoryQuery {
             name: `${k.name} - ${k.id}`,
             availableStatus: (k.availableStatus === 0 
                && 
-               ( parseInt(k.promoPrice) ? (parseInt(k.promoPrice) > 500)
-               :
                (parseInt(k.normalPrice) > 500)
-               )
                ) ? 
             "AVAILABLE" : "UNAVAILABLE",
             description: k.description,
-            price: parseInt(k.promoPrice) ? parseInt(k.promoPrice) : parseInt(k.normalPrice),
-            photos: k.filePath.includes('https') ? [k.filePath] : [`${ip}/${k.filePath}`]
+            price: parseInt(k.normalPrice),
+            photos: k.filePath?.includes('https') ? [k.filePath] : [`${ip}/${k.filePath}`]
           }
         })
       }

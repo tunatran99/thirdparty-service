@@ -1,8 +1,12 @@
-import { IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserRequestDTO {
   @IsNumber()
   readonly id: number;
+
+  @IsOptional()
+  @IsArray()
+  readonly roles?: [];
 
   @IsOptional()
   @IsString()
@@ -23,4 +27,12 @@ export class UpdateUserRequestDTO {
   @IsOptional()
   @IsString()
   readonly newPassword?: string;
+  
+  @IsOptional()
+  @IsArray()
+  readonly storeId?: string[];
+
+  @IsOptional()
+  @IsArray()
+  readonly partnerId?: number[];
 }

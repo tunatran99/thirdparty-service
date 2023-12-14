@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FindProfile } from '../query/find.profile.query';
-import { UserQueryImplement } from 'src/user/infratsructure/query/sku.prices.query.implement';
+import { UserQueryImplement } from 'src/user/infratsructure/query/user.query.implement';
 import { FindProfileResult } from '../query/find.profile.query.result';
 
 @QueryHandler(FindProfile)

@@ -1,4 +1,4 @@
-import { readConnection } from '@libs/database.module';
+import { readConnection, writeConnection } from '@libs/database.module';
 import { UtilityImplement } from '@libs/utility.module';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as ExcelJS from 'exceljs';
@@ -25,38 +25,66 @@ export class CompareService {
 
   async testFunction(stores: string[]) {
     const skuCodes = []
+    const promises = [];
 
-    for (const [index, store] of stores.entries()) {
-      console.log(store)
-      console.log("index:", index)
+    // for (const [index, store] of stores.entries()) {
+    //   console.log(store)
+    //   console.log("index:", index)
 
-      let wb = new ExcelJS.stream.xlsx.WorkbookReader(`src/app/compare/Merge8.xlsx`, {
-        sharedStrings: 'cache',
-        hyperlinks: 'cache',
-        worksheets: 'emit',
-      })
-      let rowNumber = 1
-      for await (const ws of wb) {
-        for await (const row of ws) {
-          if (rowNumber > 1 && row.values[1] !== undefined) {
-            // console.log(row.values[1])
-            if (row.values[1].substring(0, 8).length === 8) {
-              skuCodes.push(row.values[1].substring(0, 8));
-            }
-          }
-          rowNumber++;
-        }
+    //   let wb = new ExcelJS.stream.xlsx.WorkbookReader(`src/app/compare/Merge8.xlsx`, {
+    //     sharedStrings: 'cache',
+    //     hyperlinks: 'cache',
+    //     worksheets: 'emit',
+    //   })
+    //   let rowNumber = 1
+    //   for await (const ws of wb) {
+    //     for await (const row of ws) {
+    //       if (rowNumber > 1 && row.values[1] !== undefined) {
+    //         // console.log(row.values[1])
+    //         if (row.values[1].substring(0, 8).length === 8) {
+    //           skuCodes.push(row.values[1].substring(0, 8));
+    //         }
+    //       }
+    //       rowNumber++;
+    //     }
+    //   }
+    // }
+
+    let wb = new ExcelJS.stream.xlsx.WorkbookReader(`src/app/compare/MASTER_PRICE.xlsx`, {
+      sharedStrings: 'cache',
+      hyperlinks: 'cache',
+      worksheets: 'emit',
+    })
+    let rowNumber = 1
+    for await (const ws of wb) {
+      for await (const row of ws) {
+        console.log('Update price of SKU:', row.values[1])
+        // if (rowNumber > 1) {
+        const promise = writeConnection.manager
+          .getRepository(SkuEntity)
+          .createQueryBuilder()
+          .update()
+          .set({ ITEM_SELL_PRICE: row.values[2] })
+          .where('SKU_CODE = :skuCode', { skuCode: row.values[1] })
+          .execute();
+
+        promises.push(promise)
+        // }
+        rowNumber++;
       }
     }
-    console.log(skuCodes.length)
-    let result = await readConnection.getRepository(SkuEntity).createQueryBuilder('t1')
-    .where('t1.SKU_CODE in (:...skuCodes)', { skuCodes }).getRawMany();
 
-    result = result.map(i => i['t1_SKU_CODE'])
+    await Promise.all(promises);
+
+    // console.log(skuCodes.length)
+    // let result = await readConnection.getRepository(SkuEntity).createQueryBuilder('t1')
+    // .where('t1.SKU_CODE in (:...skuCodes)', { skuCodes }).getRawMany();
+
+    // result = result.map(i => i['t1_SKU_CODE'])
 
     // console.log(result)
 
-    console.log(skuCodes.filter(k => !result.includes(k)));
+    // console.log(skuCodes.filter(k => !result.includes(k)));
     // console.log(skuCodes[0])
 
 
@@ -64,7 +92,7 @@ export class CompareService {
     // console.log(prices.length)
 
     // this.logger.log("Ghi vào file")
-    
+
     // const wb = new ExcelJS.stream.xlsx.WorkbookWriter({
     //   filename: `src/newsku/9997.xlsx`,
     // });
@@ -257,62 +285,62 @@ export class CompareService {
         }
 
         for (const psPrice of psPrices) {
-            wbs[0] = new ExcelJS.stream.xlsx.WorkbookWriter({
-              filename: `src/remain/pop/${storeFolder}/price.xlsx`,
-            });
-            wss[0] = wbs[0].addWorksheet();
-            wss[0]
-              .addRow([
-                'sku',
-                'store',
-                'line',
-                'division',
-                'group',
-                'dept',
-                'category',
-                'status',
-                'member',
-                'uomEn',
-                'uomVn',
-                'normalPrice',
-                'promoPrice',
-                'oriPromoPrice',
-                'startTime',
-                'endTime',
-                'memberMark',
-                'pcNo',
-                'pcStatus',
-                'pcTransType',
-                'pcType',
-                'pcTypeValue',
-                'pcPrice',
-                'pcStartDate',
-                'pcEndDate',
-                'pcStartTime',
-                'pcEndTime',
-                'pcNormal',
-                'pcNormalStatus',
-                'pcNormalTransType',
-                'pcNormalType',
-                'pcNormalTypeValue',
-                'pcNormalPrice',
-                'pcNormalStartDate',
-                'pcNormalEndDate',
-                'pcNormalStartTime',
-                'pcNormalEndTime',
-                'gpcNo',
-                'gpcStatus',
-                'gpcTransType',
-                'gpcType',
-                'gpcTypeValue',
-                'gpcPrice',
-                'gpcStartDate',
-                'gpcEndDate',
-                'gpcStartTime',
-                'gpcEndTime',
-                'priceFrom',
-              ])
-              .commit();
+          wbs[0] = new ExcelJS.stream.xlsx.WorkbookWriter({
+            filename: `src/remain/pop/${storeFolder}/price.xlsx`,
+          });
+          wss[0] = wbs[0].addWorksheet();
+          wss[0]
+            .addRow([
+              'sku',
+              'store',
+              'line',
+              'division',
+              'group',
+              'dept',
+              'category',
+              'status',
+              'member',
+              'uomEn',
+              'uomVn',
+              'normalPrice',
+              'promoPrice',
+              'oriPromoPrice',
+              'startTime',
+              'endTime',
+              'memberMark',
+              'pcNo',
+              'pcStatus',
+              'pcTransType',
+              'pcType',
+              'pcTypeValue',
+              'pcPrice',
+              'pcStartDate',
+              'pcEndDate',
+              'pcStartTime',
+              'pcEndTime',
+              'pcNormal',
+              'pcNormalStatus',
+              'pcNormalTransType',
+              'pcNormalType',
+              'pcNormalTypeValue',
+              'pcNormalPrice',
+              'pcNormalStartDate',
+              'pcNormalEndDate',
+              'pcNormalStartTime',
+              'pcNormalEndTime',
+              'gpcNo',
+              'gpcStatus',
+              'gpcTransType',
+              'gpcType',
+              'gpcTypeValue',
+              'gpcPrice',
+              'gpcStartDate',
+              'gpcEndDate',
+              'gpcStartTime',
+              'gpcEndTime',
+              'priceFrom',
+            ])
+            .commit();
           wss[0]
             .addRow([
               psPrice.sku,
@@ -991,8 +1019,8 @@ export class CompareService {
         }
       }
       try {
-        await fs.access(`src/psprices/1001/${fileName}`);
-        const wbPS = new ExcelJS.stream.xlsx.WorkbookReader(`src/psprices/1001/${fileName}`, {});
+        await fs.access(`src/psprices/1006/${fileName}`);
+        const wbPS = new ExcelJS.stream.xlsx.WorkbookReader(`src/psprices/1006/${fileName}`, {});
         const psPrices = [] as PriceEntity[];
         for await (const worksheetReader of wbPS) {
           for await (const row of worksheetReader) {
@@ -1172,11 +1200,11 @@ export class CompareService {
           else {
             if (matchSku) {
               // count += 1
-  
+
               if (!matchStore) {
                 // count += 1
                 let anotherMessage = 'Tìm thấy SKU nhưng ko tìm thấy STORE có giá - khả năng thiếu PC và ISP';
-  
+
                 wsMissDept
                   .addRow([
                     p.store,
@@ -1194,25 +1222,25 @@ export class CompareService {
                   .commit();
               }
               // else {
-                // if (samePrice) {
-                //   let anotherMessage = 'Tìm thấy SKU - STORE nhưng sai giá';
-  
-                //   wsMissDept
-                //     .addRow([
-                //       p.store,
-                //       p.line,
-                //       p.division,
-                //       p.group,
-                //       p.dept,
-                //       p.sku,
-                //       p.normalPrice,
-                //       p.promoPrice,
-                //       p.memberPrice,
-                //       p.groupPrice,
-                //       anotherMessage,
-                //     ])
-                //     .commit();
-                // }
+              // if (samePrice) {
+              //   let anotherMessage = 'Tìm thấy SKU - STORE nhưng sai giá';
+
+              //   wsMissDept
+              //     .addRow([
+              //       p.store,
+              //       p.line,
+              //       p.division,
+              //       p.group,
+              //       p.dept,
+              //       p.sku,
+              //       p.normalPrice,
+              //       p.promoPrice,
+              //       p.memberPrice,
+              //       p.groupPrice,
+              //       anotherMessage,
+              //     ])
+              //     .commit();
+              // }
               // }
             }
             if (p.psNormalPrice === null || p.psNormalPrice === undefined) {
@@ -1356,13 +1384,72 @@ export class CompareService {
       .getMany();
     for (const store of onlyStores) {
       console.log(store)
-      await fs.mkdir(`src/psprices/${store}`, { recursive: true });
+      // await fs.mkdir(`src/psprices/${store}`, { recursive: true });
       const storeData = sql.filter((p) => p.store === store);
-      for (const dept of _.uniq(storeData.map((i) => i.dept))) {
-        const data = sql.filter((k) => k.dept === dept);
-        this.logger.log(`Writing store: ${store} / dept: ${dept}`);
-        await this.util.writeExcelFile(columns, data, `src/psprices/${store}/${dept}.xlsx`);
-      }
+      this.logger.log(`Writing store: ${store}`);
+        await this.util.writeExcelFile(columns, storeData, `src/psprices/${store}.xlsx`);
+      // for (const dept of _.uniq(storeData.map((i) => i.dept))) {
+      //   const data = sql.filter((k) => k.dept === dept);
+        
+      // }
+    }
+  }
+
+  async exportPsPricesForMB(onlyStores?: string[]) {
+    const columns = [
+      { key: 'sku', header: 'sku' },
+      { key: 'store', header: 'store' },
+      { key: 'line', header: 'line' },
+      { key: 'division', header: 'division' },
+      { key: 'group', header: 'group' },
+      { key: 'dept', header: 'dept' },
+      { key: 'category', header: 'category' },
+      { key: 'status', header: 'status' },
+      { key: 'uomEn', header: 'uomEn' },
+      { key: 'uomVn', header: 'uomVn' },
+      { key: 'normalPrice', header: 'normalPrice' },
+      { key: 'promoPrice', header: 'promoPrice' },
+      { key: 'startTime', header: 'startTime' },
+      { key: 'endTime', header: 'endTime' },
+      { key: 'createdDate', header: 'createdDate' },
+      { key: 'lastUpdate', header: 'lastUpdate' },
+    ];
+    console.log("Query dữ liệu")
+    const sql = await readConnection
+      .getRepository(PriceEntity)
+      .createQueryBuilder('t1')
+      .innerJoin('sku', 't2', 't1.sku = t2.SKU_CODE')
+      .select(`
+      t1.sku as "sku",
+      t2.ITEM_DESC_VNM as "productName",
+      t1.line as "line",
+      t1.division as "division",
+      t1.group as "group",
+      t1.dept as "department",
+      t1.category as "category",
+      t1.status as "status",
+      t1.uomEn as "uomEn",
+      t1.uomVn as "uomVn",
+      t1.store as "store",
+      t1.normalPrice as "normalPrice",
+      t1.promoPrice as "promoPrice",
+      t1.startTime as "startTime",
+      t1.endTime as "endTime",
+      t1.createdDate as "Ngày tạo",
+      t1.lastUpdate as "Ngày cập nhật"
+      `)
+      .where('t1.store IN (:...store)', { store: onlyStores })
+      .andWhere("t1.line IN ('1', '2', '3', '4', '7', '8', '9')")
+      .andWhere("t1.division IN ('11', '12', '13', '14', '15', '16', '17', '21', '22', '23', '24', '25', '26', '27', '31', '32', '33', '34', '35', '36', '37', '38', '41', '71', '72', '73', '81', '82', '83', '91', '92', '93')")
+      .getMany();
+      console.log(sql.length)
+    for (const store of onlyStores) {
+      console.log(store)
+      // await fs.mkdir(`src/psprices/${store}`, { recursive: true });
+      const storeData = sql.filter((p) => p.store === store);
+      console.log(storeData.length)
+      this.logger.log(`Writing store: ${store}`);
+      await this.util.writeExcelFile(columns, storeData, `src/psprices/${store}.xlsx`);
     }
   }
 

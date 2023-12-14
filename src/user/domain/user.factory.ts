@@ -2,12 +2,16 @@ import { UtilityImplement } from '@libs/utility.module';
 import { Inject } from '@nestjs/common';
 import { EventPublisher } from '@nestjs/cqrs';
 import { IUser, UserImplement, UserProperties } from './user';
+import { RoleEntity } from 'src/role/infratsructure/entity/role';
 
 type createUserOptions = Readonly<{
   username: string;
   password: string;
   fullname?: string;
   email?: string;
+  storeId?: string;
+  partnerId?: string;
+  roles: RoleEntity[];
 }>;
 
 export class UserFactory {

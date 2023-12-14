@@ -19,6 +19,8 @@ export class UserRepositoryImplement implements UserRepository {
       .getRepository(UserEntity)
       .createQueryBuilder('t1')
       .leftJoinAndSelect('t1.refreshTokens', 't2')
+      .leftJoinAndSelect('t1.roles', 't3')
+      .leftJoinAndSelect('t3.permissions', 't4')
       .where('t1.id = :id', { id })
       .getOne();
     return entity ? { entity: entity, model: this.entityToModel(entity) } : null;
@@ -29,6 +31,8 @@ export class UserRepositoryImplement implements UserRepository {
       .getRepository(UserEntity)
       .createQueryBuilder('t1')
       .leftJoinAndSelect('t1.refreshTokens', 't2')
+      .leftJoinAndSelect('t1.roles', 't3')
+      .leftJoinAndSelect('t3.permissions', 't4')
       .where('t1.username = :username', { username })
       .getOne();
     return entity ? { entity: entity, model: this.entityToModel(entity) } : null;

@@ -15,22 +15,23 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUser, void> {
   async execute(command: UpdateUser): Promise<void> {
     const { model, entity } = await this.userRepository.findById(command.id);
 
-    const updateData = {
-      fullname: command.fullname ? command.fullname : entity.fullname,
-      email: command.email ? command.email : entity.email,
-      avatar: command.avatar ? command.avatar : entity.avatar,
-    } as any;
-
     if (command.currentPassword && command.newPassword) {
       const pass = this.util.passwordVerify(command.currentPassword, entity.password);
       if (pass) {
-        updateData.password = this.util.passwordHash(command.newPassword);
+        entity.password = this.util.passwordHash(command.newPassword);
+        model.update({
+          password: entity.password
+        })
       } else {
         throw new HttpException(`Wrong Password`, HttpStatus.BAD_REQUEST);
       }
     }
 
-    model.update(command);
+    model.update({
+      ...command,
+      storeId: command.storeId?.toString(),
+      partnerId: command.partnerId?.toString()
+    });
 
     await this.userRepository.save(model);
 

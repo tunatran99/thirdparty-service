@@ -2,7 +2,7 @@ import { Entity, Column, CreateDateColumn } from 'typeorm';
 
 import { BaseEntity } from '@libs/base.entity';
 
-@Entity({ name: 'ps_log', synchronize: true })
+@Entity({ name: 'ps_log', synchronize: false })
 export class LogEntity extends BaseEntity {
   @Column()
   isSystemCall: boolean;

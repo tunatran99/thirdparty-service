@@ -10,6 +10,10 @@ export class FindSkuPricesByPartnerQuery implements IQuery {
   public readonly groupId?: string;
   public readonly deptId?: string;
   public readonly cateId?: string;
+  public readonly hasPromo?: string;
+  public readonly export?: boolean;
+  public readonly fromDate?: string;
+  public readonly toDate?: string;
 
   constructor(readonly data: Partial<FindSkuPricesByPartnerQuery>) {
     Object.assign(this, data);

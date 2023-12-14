@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { createUser } from '../application/command/create.user.command';
 import LocalAuthenticationGuard from '../authentication/local-authentication.guard';
@@ -12,6 +12,11 @@ import { UtilityImplement } from '@libs/utility.module';
 import { FindProfile } from '../application/query/find.profile.query';
 import { UpdateUserRequestDTO } from './dto/update.user.request.dto';
 import { UpdateUser } from '../application/command/update.user.command';
+import { userDTO } from './dto/get.user.dto';
+import { FindAll } from '../application/query/find.all.query';
+import { UpdateUserStatus } from '../application/command/update.user.status.command';
+import { UpdatePassRequestDTO } from './dto/update.pass.request.dto';
+import { UpdateUserPass } from '../application/command/update.pass.command';
 
 @Controller('user')
 export class UserController {
@@ -22,8 +27,14 @@ export class UserController {
 
   @Post()
   async createUser(@Body() body: createUserRequestDTO): Promise<void> {
-    const command = new createUser(body.username, body.password, body.fullname, body.email);
+    const command = new createUser(body.username, body.password, body.roles, body.fullname, body.email, body.storeId, body.partnerId);
     await this.commandBus.execute(command);
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Get()
+  async getList(@Query() query: userDTO) {
+    return await this.queryBus.execute(new FindAll(query.search, query.offset, query.limit));
   }
 
   @Post('login')
@@ -70,5 +81,17 @@ export class UserController {
   @Post('updateUserInfo')
   async updateUserInfo(@Body() body: UpdateUserRequestDTO): Promise<void> {
     await this.commandBus.execute(new UpdateUser(body));
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Post('status')
+  async setStatus(@Body('id') id: number) {
+    await this.commandBus.execute(new UpdateUserStatus(id))
+  }
+  
+  @UseGuards(JwtAuthenticationGuard)
+  @Post('adminchangepass')
+  async adminChangePass(@Body() body: UpdatePassRequestDTO) {
+    await this.commandBus.execute(new UpdateUserPass(body))
   }
 }

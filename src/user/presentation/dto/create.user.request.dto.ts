@@ -7,11 +7,21 @@ export class createUserRequestDTO {
   @IsString()
   readonly password: string;
 
+  @IsArray()
+  readonly roles: [];
+
   @IsOptional()
   @IsString()
   readonly fullname?: string;
 
   @IsOptional()
-  @IsArray()
   readonly email?: string;
+
+  @IsOptional()
+  @IsArray()
+  readonly storeId?: string[];
+
+  @IsOptional()
+  @IsArray()
+  readonly partnerId?: number[];
 }

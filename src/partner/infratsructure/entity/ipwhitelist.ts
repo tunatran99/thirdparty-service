@@ -3,7 +3,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity, CommonEntity } from '@libs/base.entity';
 import { PartnerEntity } from './partner';
 
-@Entity({ name: 'ps_partner_ipwhitelist', synchronize: true })
+@Entity({ name: 'ps_partner_ipwhitelist', synchronize: false })
 export class IpWhitelistEntity extends BaseEntity {
   @Column()
   ip: string;
