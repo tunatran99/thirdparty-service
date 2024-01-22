@@ -11,6 +11,7 @@ import { SkuEntity } from 'src/sku/infratsructure/entity/sku';
 import { PriceService } from 'src/sku/domain/price.service';
 import { PriceServiceRepositoryImplement } from 'src/sku/infratsructure/repository/price.service.repository.implement';
 import moment from 'moment';
+import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
 
 @Injectable()
 export class CompareService {
@@ -50,7 +51,7 @@ export class CompareService {
     //   }
     // }
 
-    let wb = new ExcelJS.stream.xlsx.WorkbookReader(`src/app/compare/MASTER_PRICE.xlsx`, {
+    let wb = new ExcelJS.stream.xlsx.WorkbookReader(`src/app/compare/new_spfid.xlsx`, {
       sharedStrings: 'cache',
       hyperlinks: 'cache',
       worksheets: 'emit',
@@ -58,14 +59,14 @@ export class CompareService {
     let rowNumber = 1
     for await (const ws of wb) {
       for await (const row of ws) {
-        console.log('Update price of SKU:', row.values[1])
+        console.log('Update spf_dish_id of SKU:', row.values[2])
         // if (rowNumber > 1) {
         const promise = writeConnection.manager
-          .getRepository(SkuEntity)
+          .getRepository(MenuEntity)
           .createQueryBuilder()
           .update()
-          .set({ ITEM_SELL_PRICE: row.values[2] })
-          .where('SKU_CODE = :skuCode', { skuCode: row.values[1] })
+          .set({ SPF_DISH_ID: row.values[3] })
+          .where('SPF_DISH_ID = :spf', { spf: row.values[1] })
           .execute();
 
         promises.push(promise)

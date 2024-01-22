@@ -32,6 +32,10 @@ export class FindSkuByPartnerRequestDTO {
   @Type(() => Boolean)
   @IsBoolean()
   export?: boolean;
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  status?: number;
 
   @IsOptional()
   @IsString()

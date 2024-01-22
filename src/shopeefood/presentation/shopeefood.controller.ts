@@ -1,18 +1,19 @@
-import { Controller, Get, HttpCode, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import ApiKeyAuthenticationGuard from 'src/user/authentication/apikey.guard';
+import ApiKeyAuthenticationGuard from 'src/shopeefood/authentication/apikey.guard';
 import { FindCategoryByCodesQuery } from '../application/query/find.category.bycodes.query';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateData } from 'src/shopeefood/application/command/create.data.command';
 import { CreateCategory } from 'src/shopeefood/application/command/create.category.command';
 import { FindCategoryQuery } from '../application/query/find.category.query';
 import { SearchDTO } from './dto/common.dto';
+import { CreateDTO } from './dto/create.category.dto';
 
 @Controller('shopeefood')
 export class ShopeefoodController {
   constructor(readonly commandBus: CommandBus, readonly queryBus: QueryBus) { }
 
-  // @UseGuards(ApiKeyAuthenticationGuard)
+  @UseGuards(ApiKeyAuthenticationGuard)
   @HttpCode(200)
   @Get('merchant/menu')
   async getMenu(@Query('partnerMerchantID') id: string): Promise<any> {
@@ -42,8 +43,8 @@ export class ShopeefoodController {
 
   @Post('category/upload')
   @UseInterceptors(FileInterceptor('file'))
-  async UploadCategoryData(@UploadedFile() file: Express.Multer.File): Promise<void> {
-    const command = new CreateCategory(file);
+  async UploadCategoryData(@UploadedFile() file: Express.Multer.File, @Body() body: CreateDTO): Promise<void> {
+    const command = new CreateCategory(file, body);
     return await this.commandBus.execute(command);
   }
 }

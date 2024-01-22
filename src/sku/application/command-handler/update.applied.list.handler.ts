@@ -22,14 +22,14 @@ export class UpdateAppliedListHandler implements ICommandHandler<UpdateAppliedLi
     //Thêm logic gọi đến partner để cập nhật skus
     const partnerId = items[0].partnerId;
     const sku = items[0].sku;
-    if (partnerId === 5) {
+    if (partnerId.toLowerCase() === 'shopeefood') {
       //partner MB App
       console.log('call MB App');
       // const prices = await this.skuPricesQuery.findPricesByCodes([sku], partnerId);
       // return await this.priceService.callMobileApp(prices);
       // const promises = [];
       for (const item of items) {
-        return await this.priceService.syncMenu(item.store);
+        // return await this.priceService.syncMenu(item.store);
         // promises.push(res);
       }
       // await Promise.all(promises);

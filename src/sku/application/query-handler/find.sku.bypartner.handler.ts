@@ -25,6 +25,7 @@ export class FindSkuPricesByPartnerQueryHandler
       data.deptId,
       data.cateId,
       data.hasPromo,
+      data.status,
       data.export,
       data.fromDate,
       data.toDate

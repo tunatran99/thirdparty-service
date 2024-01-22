@@ -1,29 +1,37 @@
+import { AggregateRoot } from "@nestjs/cqrs";
 
-export type CategoryProperties = Readonly<
+export type CategoryEssentialProperties = Readonly<
   Required<{
     CATEGORY_CODE: string;
     CATEGORY_NAME: string;
     SEQUENCE: number;
     ACTIVE: string;
+  }>
+>;
+
+export type CategoryOptionalProperties = Readonly<
+  Partial<{
+    id: number;
     ANCESTOR: string;
   }>
 >;
 
+export type CategoryProperties = CategoryEssentialProperties & CategoryOptionalProperties;
+
 export interface ICategory {
-  CATEGORY_CODE: string;
-  CATEGORY_NAME: string;
-  SEQUENCE: number;
-  ACTIVE: string;
-  ANCESTOR: string;
   create: () => void;
   commit: () => void;
 }
 
-// export class CategoryImplement extends AggregateRoot implements ICategory {
-//   constructor(properties: CategoryProperties) {
-//     super();
-//     Object.assign(this, properties);
-//   }
+export class CategoryImplement extends AggregateRoot implements ICategory {
+  private readonly id: number;
 
-//   create(): void {}
-// }
+  constructor(properties: CategoryProperties) {
+    super();
+    Object.assign(this, properties);
+  }
+
+  create(): void {
+    // this.apply(new UserOpenedEvent(this.id, this.email));
+  }
+}

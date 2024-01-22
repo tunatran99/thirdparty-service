@@ -7,7 +7,7 @@ import { RequestWithPartner } from 'src/user/presentation/dto/requested.partner.
 import { CronUpdatePrice } from '../application/command/cron.update.price';
 import { DownloadPriceToMobile } from '../application/command/download.price.to.mobile';
 import { UpdateAppliedList } from '../application/command/update.applied.list';
-import { FindCategory, FindDepartment, FindDivision, FindFilterInfoQuery, FindGroup, FindStore } from '../application/query/find.filter.info.query';
+import { FindCategory, FindDepartment, FindDivision, FindPartner, FindLine, FindGroup, FindStore, FindThirdpartyCategory } from '../application/query/find.filter.info.query';
 import { FindSkuPricesByCodesQuery } from '../application/query/find.sku.prices.bycodes.query';
 import { FindSkuPricesByCodesResult } from '../application/query/find.sku.prices.bycodes.result';
 import { FindSkuPricesByPartnerQuery } from '../application/query/find.sku.prices.bypartner.query';
@@ -40,7 +40,7 @@ export class SkuController {
   }
 
   // @UseGuards(ApiKeyAuthenticationGuard)
-  @UseInterceptors(A3PLogInterceptor)
+  // @UseInterceptors(A3PLogInterceptor)
   @HttpCode(200)
   @Post('downloadtomobile')
   async downloadPriceToMobile(@Body() body: FindSkuPricesRequestDTO): Promise<void> {
@@ -90,9 +90,15 @@ export class SkuController {
   }
 
   @UseGuards(JwtAuthenticationGuard)
-  @Get('getfilterinfos')
-  async getFilterInfos(@Query('partners') partners?: string[]) {
-    return await this.queryBus.execute(new FindFilterInfoQuery(partners));
+  @Get('getpartners')
+  async getPartners(@Query('partners') partners?: string[]) {
+    return await this.queryBus.execute(new FindPartner(partners));
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Get('getlines')
+  async getLines(@Query('refId') partnerId?: number) {
+    return await this.queryBus.execute(new FindLine(partnerId));
   }
 
   @UseGuards(JwtAuthenticationGuard)
@@ -130,6 +136,12 @@ export class SkuController {
   }
 
   @UseGuards(JwtAuthenticationGuard)
+  @Get('getthirdcates')
+  async getThirdCates(@Query('refId') refId?: string) {
+    return await this.queryBus.execute(new FindThirdpartyCategory(refId));
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
   @Get('skudetail')
   async skuDetail(@Query() query: FindSkuPriceDetailRequestDTO) {
     return await this.queryBus.execute(new FindSkuPricesDetailQuery(query.partnerId, query.sku));
@@ -138,9 +150,9 @@ export class SkuController {
   @UseGuards(JwtAuthenticationGuard)
   @Post('updateskuapplylist')
   async updateSkuApplyList(@Body() body: UpdateAppliedListRequestDTO) {
-    body.items.forEach((i) => {
-      i.partnerId = Number.parseInt(i.partnerId as unknown as string);
-    });
+    // body.items.forEach((i) => {
+    //   i.partnerId = Number.parseInt(i.partnerId as unknown as string);
+    // });
     return await this.commandBus.execute(new UpdateAppliedList(body.items));
   }
 

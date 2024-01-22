@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { FindFilterInfoQuery, FindCategory,
+import { FindPartner, FindLine, FindCategory, FindThirdpartyCategory,
   FindDepartment,
   FindDivision,
   FindGroup, 
@@ -8,19 +8,23 @@ import { Inject } from '@nestjs/common';
 import { FindFilterInfoResult } from '../query/find.filter.info.result';
 import { SkuPricesQueryImplement } from 'src/sku/infratsructure/query/sku.prices.query.implement';
 
-@QueryHandler(FindFilterInfoQuery)
-export class FindFilterInfoQueryHandler implements IQueryHandler<FindFilterInfoQuery, FindFilterInfoResult> {
+@QueryHandler(FindPartner)
+export class FindPartnerHandler implements IQueryHandler<FindPartner, FindFilterInfoResult> {
   @Inject()
   private readonly skuPricesQuery: SkuPricesQueryImplement;
 
-  async execute({ partnerId }: FindFilterInfoQuery): Promise<FindFilterInfoResult> {
-    const { partners, lines, cates } = await this.skuPricesQuery.findFilterInfo(partnerId);
+  async execute({ partnerId }: FindPartner): Promise<FindFilterInfoResult> {
+    return await this.skuPricesQuery.findPartners(partnerId);
+  }
+}
 
-    return {
-      partners,
-      lines,
-      cates
-    };
+@QueryHandler(FindLine)
+export class FindLineHandler implements IQueryHandler<FindLine, FindFilterInfoResult> {
+  @Inject()
+  private readonly skuPricesQuery: SkuPricesQueryImplement;
+
+  async execute({ partnerId }: FindLine): Promise<FindFilterInfoResult> {
+    return await this.skuPricesQuery.findLines(partnerId);
   }
 }
 
@@ -71,5 +75,15 @@ export class FindCategoryHandler implements IQueryHandler<FindCategory, any> {
 
   async execute(q: FindCategory): Promise<any> {
     return await this.skuPricesQuery.findCates(q.refId);
+  }
+}
+
+@QueryHandler(FindThirdpartyCategory)
+export class FindThirdpartyCategoryHandler implements IQueryHandler<FindThirdpartyCategory, any> {
+  @Inject()
+  private readonly skuPricesQuery: SkuPricesQueryImplement;
+
+  async execute(q: FindThirdpartyCategory): Promise<any> {
+    return await this.skuPricesQuery.findThirdPartyCates(q.refId);
   }
 }

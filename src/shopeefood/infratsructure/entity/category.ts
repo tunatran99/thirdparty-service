@@ -12,5 +12,5 @@ export class CategoryEntity extends BaseEntity {
   @Column()
   ACTIVE: string;
   @Column()
-  ANCESTOR: string;
+  ANCESTOR?: string;
 }

@@ -1,7 +1,7 @@
 import { IsArray, ArrayMinSize, IsNotEmpty } from 'class-validator';
 
 class appliedItem {
-  partnerId: number;
+  partnerId: string;
   sku: string;
   store: string;
   active: boolean;

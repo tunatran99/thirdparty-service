@@ -10,12 +10,13 @@ import { CategoryRepositoryImplement } from './infratsructure/repository/categor
 import { FindCategoryHandler } from 'src/sku/application/query-handler/find.filter.info.handler';
 import { FindCategoryQueryHandler } from './application/query-handler/find.category.handler';
 import { DataFactory } from './domain/data.factory';
+import { CategoryFactory } from './domain/category.factory';
 
 const infrastructure = [CategoryQueryImplement, DataRepositoryImplement, CategoryRepositoryImplement];
 
 const application = [FindCategoryByCodesQueryHandler, CreateDataHandler, CreateCategoryHandler, FindCategoryQueryHandler];
 
-const domain = [DataFactory];
+const domain = [DataFactory, CategoryFactory];
 
 @Module({
   imports: [CqrsModule],

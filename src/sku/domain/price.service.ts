@@ -282,7 +282,7 @@ export class PriceService {
         //Lọc bỏ các record có enddate > ngày hiện tại (hết hạn áp dụng)
         //Lọc bỏ TRANS_TYPE = PDCM hoặc PMOM
         //Sắp xếp lại list theo thứ tự giảm dần theo PC_NO và startdate (mới nhất trước)
-        // console.log('sku pc', sku.pricechanges.length)
+
         const pricechanges = _.orderBy(
           sku.pricechanges.filter((i) => {
             if (i.END_DATE && Number.parseInt(i.END_DATE) < Number.parseInt(currDate)) {
@@ -377,6 +377,13 @@ export class PriceService {
                 psPrice.endTime = promoPc.END_DATE
                   ? moment(`${promoPc.END_DATE}-${promoPc.DAILY_END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                   : null;
+
+                psPrice.futurePCNo = null;
+                psPrice.futureGPCNo = null;
+
+                psPrice.futurePromoPrice = null;
+                psPrice.futureStartTime = null;
+                psPrice.futureEndTime = null;
 
                 // const promise = writeConnection.manager
                 //   .getRepository(PricechangeEntity)
@@ -556,6 +563,13 @@ export class PriceService {
                   ? moment(`${promoPc.END_DATE}-${promoPc.DAILY_END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                   : null;
 
+                psPrice.futurePCNo = null;
+                psPrice.futureGPCNo = null;
+
+                psPrice.futurePromoPrice = null;
+                psPrice.futureStartTime = null;
+                psPrice.futureEndTime = null;
+
                 // const promise = writeConnection.manager
                 //   .getRepository(PricechangeEntity)
                 //   .createQueryBuilder()
@@ -650,6 +664,12 @@ export class PriceService {
               psPrice.endTime = pc.END_DATE
                 ? moment(`${pc.END_DATE}-${pc.DAILY_END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                 : null;
+              psPrice.futurePCNo = null;
+              psPrice.futureGPCNo = null;
+
+              psPrice.futurePromoPrice = null;
+              psPrice.futureStartTime = null;
+              psPrice.futureEndTime = null;
               const mkumkd = filteredPc.find(
                 (k) =>
                   k.PRICE_ID !== pc.PRICE_ID &&
@@ -738,6 +758,13 @@ export class PriceService {
                   ? moment(`${gpc.END_DATE}-${gpc.END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                   : null;
 
+                psPrice.futurePCNo = null;
+                psPrice.futureGPCNo = null;
+
+                psPrice.futurePromoPrice = null;
+                psPrice.futureStartTime = null;
+                psPrice.futureEndTime = null;
+
                 const category = await this.priceServiceRepo.findCategoryBySku(sku.SKU_CODE);
 
                 // const promise = writeConnection.manager
@@ -821,7 +848,7 @@ export class PriceService {
               );
               if (promoPc) {
                 psPrice.futurePCNo = promoPc.PRICE_CHANGE_NO;
-                
+
                 psPrice.futurePromoPrice = promoPc.NEW_SELL_PRICE;
                 psPrice.futureStartTime = promoPc.START_DATE
                   ? moment(`${promoPc.START_DATE}-${promoPc.DAILY_START_TIME}`, 'YYYYMMDD-HHmmss').toDate()
@@ -829,7 +856,7 @@ export class PriceService {
                 psPrice.futureEndTime = promoPc.END_DATE
                   ? moment(`${promoPc.END_DATE}-${promoPc.DAILY_END_TIME}`, 'YYYYMMDD-HHmmss').toDate()
                   : null;
-              } 
+              }
             } else if (['MKU', 'MKD'].includes(futurePC.TRANS_TYPE)) {
               const promoPc = filteredPc.find(
                 (i) =>
@@ -850,7 +877,7 @@ export class PriceService {
               }
             } else {
               psPrice.futurePCNo = futurePC.PRICE_CHANGE_NO;
-              
+
               psPrice.futurePromoPrice = futurePC.NEW_SELL_PRICE;
               psPrice.futureStartTime = futurePC.START_DATE
                 ? moment(`${futurePC.START_DATE}-${futurePC.DAILY_START_TIME}`, 'YYYYMMDD-HHmmss').toDate()
@@ -886,7 +913,7 @@ export class PriceService {
             else {
               psPrice.futurePCNo = null;
               psPrice.futureGPCNo = null;
-              
+
               psPrice.futurePromoPrice = null;
               psPrice.futureStartTime = null;
               psPrice.futureEndTime = null;

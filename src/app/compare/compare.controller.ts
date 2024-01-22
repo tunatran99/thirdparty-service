@@ -7,7 +7,7 @@ export class CompareController {
 
   @Post('testCalc')
   async testCalc(@Body('stores') stores: string[]) {
-    const data = await this.compareService.exportPsPricesForMB(stores)
+    const data = await this.compareService.testFunction(stores)
     return data;
   }
   @Post('xlsToXlsx')

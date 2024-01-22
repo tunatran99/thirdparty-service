@@ -148,7 +148,7 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
 
   async updateAppliedList(data: any[]): Promise<void> {
     const promises = [];
-    if (data[0].partnerId === 5) {
+    if (data[0].partnerId.toLowerCase() === 'shopeefood') {
       for (const item of data) {
         const sku = await readConnection
         .getRepository(SkuEntity)
@@ -159,7 +159,7 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
           .getRepository(MenuEntity)
           .createQueryBuilder()
           .update()
-          .set({ STATUS: !item.active })
+          .set({ STATUS: item.active ? 0 : 1 })
           .where('SKU_ID = :SKU_ID', { SKU_ID: sku.SKU_ID })
           .andWhere('STORE = :store', { store: item.store })
           .execute();

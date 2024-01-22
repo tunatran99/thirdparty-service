@@ -28,92 +28,93 @@ export class CreateDataHandler implements ICommandHandler<CreateData, number> {
       const entities = [];
 
       for (const data of excelData) {
-        const [cateId, skuId] = await Promise.all([
-          this.DataRepo.findCategoryIdByCode(data.CATEGORY),
-          this.DataRepo.findSkuIdByCode(data.SKU)
-        ]);
+        let cateId: number, skuId: number, stores: string[];
+        if (data.CATEGORY) cateId = await this.DataRepo.findCategoryIdByCode(data.CATEGORY);
+        if (data.SKU) skuId = await this.DataRepo.findSkuIdByCode(data.SKU);
+        if (data.STORE.toString().includes(',')) stores = data.STORE.split(',');
 
         const index = entities.findIndex(i => i.SKU_ID === skuId)
 
         if (index == -1) {
-          const menu = await this.DataRepo.findBySkuId(skuId, data.STORE);
-          if (menu) {
-            menu.model.update({
-              CATEGORY_ID: cateId ?? parseInt(data.CATEGORY),
-              SKU_ID: skuId ?? parseInt(data.SKU),
-              STORE: data.STORE,
-              DESCRIPTION: data.DESCRIPTION,
-              STATUS: parseInt(data.STATUS),
-              SKU_IMAGE: data.SKU_IMAGE,
-              SEQUENCE: data.SEQUENCE,
-              SPF_DISH_ID: data.SPF_DISH_ID ? data.SPF_DISH_ID : null
-            });
+          if (stores && stores.length > 1) {
+            for (let store of stores) {
+              store = store.trim();
+              const menu = await this.DataRepo.findBySkuId(skuId, store);
+              if (menu) {
+                menu.model.update({
+                  CATEGORY_ID: cateId ?? (data.CATEGORY ? parseInt(data.CATEGORY) : null),
+                  SKU_ID: skuId ?? (data.SKU ? parseInt(data.SKU) : null),
+                  STORE: store,
+                  DESCRIPTION: data.DESCRIPTION,
+                  STATUS: parseInt(data.STATUS),
+                  SKU_IMAGE: data.SKU_IMAGE,
+                  SEQUENCE: data.SEQUENCE,
+                  SPF_DISH_ID: data.SPF_DISH_ID ? data.SPF_DISH_ID : null
+                });
 
-            await this.DataRepo.save(menu.model);
+                await this.DataRepo.save(menu.model);
 
-            menu.model.commit();
+                menu.model.commit();
+              }
+              else {
+                const newMenu = this.dataFactory.create({
+                  CATEGORY_ID: cateId ?? (data.CATEGORY ? parseInt(data.CATEGORY) : null),
+                  SKU_ID: skuId ?? (data.SKU ? parseInt(data.SKU) : null),
+                  STORE: store,
+                  DESCRIPTION: data.DESCRIPTION,
+                  STATUS: data.STATUS,
+                  SKU_IMAGE: data.SKU_IMAGE,
+                  SEQUENCE: data.SEQUENCE,
+                  SPF_DISH_ID: data.SPF_DISH_ID
+                });
+
+                newMenu.create();
+
+                await this.DataRepo.save(newMenu);
+
+                newMenu.commit();
+              }
+            }
           }
           else {
-            const newMenu = this.dataFactory.create({
-              CATEGORY_ID: cateId ?? parseInt(data.CATEGORY),
-              SKU_ID: skuId ?? parseInt(data.SKU),
-              STORE: data.STORE,
-              DESCRIPTION: data.DESCRIPTION,
-              STATUS: data.STATUS,
-              SKU_IMAGE: data.SKU_IMAGE,
-              SEQUENCE: data.SEQUENCE,
-              SPF_DISH_ID: data.SPF_DISH_ID
-            });
+            const menu = await this.DataRepo.findBySkuId(skuId, data.STORE);
+              if (menu) {
+                menu.model.update({
+                  CATEGORY_ID: cateId ?? (data.CATEGORY ? parseInt(data.CATEGORY) : null),
+                  SKU_ID: skuId ?? (data.SKU ? parseInt(data.SKU) : null),
+                  STORE: data.STORE,
+                  DESCRIPTION: data.DESCRIPTION,
+                  STATUS: parseInt(data.STATUS),
+                  SKU_IMAGE: data.SKU_IMAGE,
+                  SEQUENCE: data.SEQUENCE,
+                  SPF_DISH_ID: data.SPF_DISH_ID ? data.SPF_DISH_ID : null
+                });
 
-            newMenu.create();
+                await this.DataRepo.save(menu.model);
 
-            await this.DataRepo.save(newMenu);
+                menu.model.commit();
+              }
+              else {
+                const newMenu = this.dataFactory.create({
+                  CATEGORY_ID: cateId ?? (data.CATEGORY ? parseInt(data.CATEGORY) : null),
+                  SKU_ID: skuId ?? (data.SKU ? parseInt(data.SKU) : null),
+                  STORE: data.STORE,
+                  DESCRIPTION: data.DESCRIPTION,
+                  STATUS: data.STATUS,
+                  SKU_IMAGE: data.SKU_IMAGE,
+                  SEQUENCE: data.SEQUENCE,
+                  SPF_DISH_ID: data.SPF_DISH_ID
+                });
 
-            newMenu.commit();
+                newMenu.create();
+
+                await this.DataRepo.save(newMenu);
+
+                newMenu.commit();
+              }
           }
-          // const entity = readConnection.getRepository(MenuEntity).create({
-          //   CATEGORY_ID: cateId ?? parseInt(data.CATEGORY),
-          //   SKU_ID: skuId ?? parseInt(data.SKU),
-          //   STORE: data.STORE,
-          //   DESCRIPTION: data.DESCRIPTION,
-          //   STATUS: data.STATUS,
-          //   SKU_IMAGE: data.SKU_IMAGE,
-          //   SEQUENCE: data.SEQUENCE,
-          //   SPF_DISH_ID: data.SPF_DISH_ID
-          // });
-          // const entity = new MenuEntity();
-          // entity.CATEGORY_ID = cateId ?? parseInt(data.CATEGORY);
-          // entity.SKU_ID = skuId ?? parseInt(data.SKU);
-          // entity.STORE = data.STORE;
-          // entity.DESCRIPTION = data.DESCRIPTION;
-          // entity.STATUS = data.STATUS;
-          // entity.SKU_IMAGE = data.SKU_IMAGE;
-          // entity.SEQUENCE = data.SEQUENCE;
-
-          // entities.push(entity)
         }
       }
-
-      // excelData.forEach(async (item) => {
-      //   const [cateId, skuId, storeId] = await Promise.all([
-      //     this.DataRepo.findCategoryIdByCode(item.CATEGORY),
-      //     this.DataRepo.findSkuIdByCode(item.SKU),
-      //     this.DataRepo.findStoreIdByCode(item.STORE)
-      //   ]);
-
-      //   const entity = new MenuEntity();
-      //   entity.CATEGORY_ID = cateId;
-      //   entity.SKU_ID = skuId;
-      //   entity.STORE_ID = storeId;
-      //   entity.DESCRIPTION = item.DESCRIPTION;
-      //   entity.STATUS = item.STATUS;
-      //   entity.SKU_IMAGE = item.SKU_IMAGE;
-      //   entity.SEQUENCE = item.SEQUENCE;
-
-      //   entities.push(entity)
-      // });
-
-      // await this.DataRepo.save(entities);
 
       return 1;
     }

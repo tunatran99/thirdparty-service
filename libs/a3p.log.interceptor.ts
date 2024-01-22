@@ -45,7 +45,7 @@ export class A3PLogInterceptor implements NestInterceptor {
         //   requestHeader,
         //   requestBody,
         //   responseBody,
-        // })
+        // });
 
         return data;
       }),

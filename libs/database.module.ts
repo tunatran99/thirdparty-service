@@ -100,7 +100,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       RoleEntity,
       PermissionEntity,
       SkuImageLinkEntity
-    ],
+    ], // Khai báo entity tương ứng với table trong database
     charset: 'utf8mb4_unicode_ci',
     host: environment.DB_HOST,
     port: environment.DB_PORT,

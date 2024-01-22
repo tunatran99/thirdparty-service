@@ -26,17 +26,19 @@ export interface SkuPricesQuery {
     deptId?: string,
     cateId?: string,
     hasPromo?: string,
+    status?: number,
     isExporting?: boolean,
     fromDate?: string,
     toDate?: string
   ) => Promise<FindSkuPricesByPartnerResult>;
-  findFilterInfo: (partnerId?: string[]) => Promise<{ partners: PartnerEntity[]; lines: LineEntity[]; 
-    cates: CategoryEntity[]  }>;
+  findPartners: (partnerId?: string[]) => Promise<PartnerEntity[]>;
+  findLines: (partnerId?: number) => Promise<any>;
   findStores: (refId?: number, storeId?: string[]) => Promise<any>;
   findDivs: (refId?: string[]) => Promise<any>;
   findGroups: (refId?: string[]) => Promise<any>;
   findDepts: (refId?: string[]) => Promise<any>;
   findCates: (refId?: string[]) => Promise<any>;
+  findThirdPartyCates: (refId?: string) => Promise<any>;
   findCateByCode: (code: string) => Promise<any>;
   checkImportImageLink: (sku: string, partner: string) => Promise<CheckImportImageLinkResult>;
   findSkuPricesDetail: (partnerId: number, sku: string) => Promise<FindSkuPricesDetailResult>;

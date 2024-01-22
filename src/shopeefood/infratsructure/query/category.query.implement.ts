@@ -12,7 +12,7 @@ export class CategoryQueryImplement implements CategoryQuery {
       .getRepository(CategoryEntity)
       .createQueryBuilder('t1');
 
-    if(search) {
+    if (search) {
       sql = sql.andWhere(
         new Brackets((qb) => {
           qb.where('t1.CATEGORY_CODE like :search', { search: `%${search}` })
@@ -23,7 +23,7 @@ export class CategoryQueryImplement implements CategoryQuery {
       );
     }
 
-    if(offset && limit) {
+    if (offset && limit) {
       sql = sql.offset(offset).limit(limit);
     }
 
@@ -44,10 +44,10 @@ export class CategoryQueryImplement implements CategoryQuery {
   };
 
   async selectStoreRecords(id: string): Promise<any> {
-    if(parseInt(id) > 1008) {
+    if (parseInt(id) > 1008) {
       throw new HttpException({ message: `Không thể truy cập cửa hàng này` }, HttpStatus.BAD_REQUEST)
     }
-    
+
     let sql = readConnection
       .getRepository(MenuEntity)
       .createQueryBuilder('t1')
@@ -61,11 +61,11 @@ export class CategoryQueryImplement implements CategoryQuery {
       .where(`t1.STORE in (${id})`);
     const data = await sql.getRawOne();
 
-    if(!data.cates) {
+    if (!data.cates) {
       throw new HttpException({ message: `Không tồn tại cửa hàng này` }, HttpStatus.BAD_REQUEST)
     }
 
-    const cates = data.cates.filter((i, index) => data.cates[index] != data.cates[index+1])
+    const cates = data.cates.filter((i: any, index: number) => data.cates[index] != data.cates[index + 1])
 
     const cateData = await this.selectCateRecords(cates, id);
     return {
@@ -174,7 +174,7 @@ export class CategoryQueryImplement implements CategoryQuery {
         'items',
       )
       .where('t1.CATEGORY_ID in (:...cates) and t1.STORE = :store and t6.partnerId = 5', { cates, store });
-      // console.log(sql.groupBy('t1.CATEGORY_ID').getQuery())
+    // console.log(sql.groupBy('t1.CATEGORY_ID').getQuery())
     const data = await sql.groupBy('t1.CATEGORY_ID').getRawMany();
     return data.map((i) => {
       return {
@@ -182,17 +182,17 @@ export class CategoryQueryImplement implements CategoryQuery {
         sequence: i.sequence,
         name: i.name,
         availableStatus: i.availableStatus === 'Y' ? "AVAILABLE" : "UNAVAILABLE",
-        items: i.items.map((k) => {
+        items: i.items.map((k: { id: any; sequence: any; name: any; availableStatus: number; normalPrice: string; description: any; filePath: string | string[]; }) => {
           return {
             id: k.id,
             sequence: k.sequence,
             sort_type: 1,
             name: `${k.name} - ${k.id}`,
-            availableStatus: (k.availableStatus === 0 
-               && 
-               (parseInt(k.normalPrice) > 500)
-               ) ? 
-            "AVAILABLE" : "UNAVAILABLE",
+            availableStatus: (k.availableStatus === 0
+              &&
+              (parseInt(k.normalPrice) > 500)
+            ) ?
+              "AVAILABLE" : "UNAVAILABLE",
             description: k.description,
             price: parseInt(k.normalPrice),
             photos: k.filePath?.includes('https') ? [k.filePath] : [`${ip}/${k.filePath}`]

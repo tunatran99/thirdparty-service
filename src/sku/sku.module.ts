@@ -4,7 +4,7 @@ import { LogModule } from 'src/log/log.module';
 import { DownloadPriceToMobileHandler } from './application/command-handler/download.price.to.mobile.handler';
 import { UpdateAppliedListHandler } from './application/command-handler/update.applied.list.handler';
 import { FoundSkuPricesSetRelationEventHandler } from './application/event-handler/found.sku.prices.set.relation.handler';
-import { FindCategoryHandler, FindDepartmentHandler, FindDivisionHandler, FindFilterInfoQueryHandler, FindGroupHandler, FindStoreHandler } from './application/query-handler/find.filter.info.handler';
+import { FindCategoryHandler, FindDepartmentHandler, FindDivisionHandler, FindPartnerHandler, FindLineHandler, FindGroupHandler, FindStoreHandler, FindThirdpartyCategoryHandler } from './application/query-handler/find.filter.info.handler';
 import { FindSkuPricesByCodesQueryHandler } from './application/query-handler/find.sku.bycodes.handler';
 import { FindSkuPricesByPartnerQueryHandler } from './application/query-handler/find.sku.bypartner.handler';
 import { FindSkuPricesDetailQueryHandler } from './application/query-handler/find.sku.detail.handler';
@@ -28,16 +28,18 @@ const application = [
   FoundSkuPricesSetRelationEventHandler,
   DownloadPriceToMobileHandler,
   FindSkuPricesByPartnerQueryHandler,
-  FindFilterInfoQueryHandler,
   FindSkuPricesDetailQueryHandler,
   UpdateAppliedListHandler,
   CronUpdatePriceHandler,
   CronSyncMenuHandler,
+  FindPartnerHandler,
+  FindLineHandler,
   FindStoreHandler,
   FindDivisionHandler,
   FindGroupHandler,
   FindDepartmentHandler,
   FindCategoryHandler,
+  FindThirdpartyCategoryHandler,
   CheckImportImageLinkHandler,
   ImportImageLinkHandler
 ];
