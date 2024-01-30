@@ -14,31 +14,48 @@ export class ImportImageLinkHandler implements ICommandHandler<ImportImageLink, 
   @Inject()
   private readonly skuPricesQuery: SkuPricesQueryImplement;
   @Inject() private readonly skuImageLinkFactory: SkuImageLinkFactory;
-  
+
   @Transactional()
   async execute({ body }: ImportImageLink): Promise<void> {
     const saveData = [] as ISkuImageLink[];
-    for(const item of body) {
+    for (const item of body) {
       const skuId = await this.skuPricesQuery.findIdByCode(item.skuCode);
       const partnerId = await this.skuPricesQuery.findIdByName(item.partner.toLowerCase());
 
       let media: ISkuImageLink;
       if (item.type === 'update') {
         const { model } = await this.skuImageLinkRepo.findByCode(item.skuCode, partnerId);
-        model.update({
-          url: item.url
-        });
+        if (item.fileType === 'jpeg') {
+          model.update({
+            jpeg: item.url
+          });
+        }
+        if (item.fileType === 'png') {
+          model.update({
+            png: item.url
+          });
+        }
         media = model;
       } else {
-        media = this.skuImageLinkFactory.create({
-          skuId,
-          skuCode: item.skuCode,
-          url: item.url,
-          partnerId
-        });
-        media.create();
+        if (item.fileType === 'jpeg') {
+          media = this.skuImageLinkFactory.create({
+            skuId,
+            skuCode: item.skuCode,
+            jpeg: item.url,
+            partnerId
+          });
+          media.create();
+        }
+        if (item.fileType === 'png') {
+          media = this.skuImageLinkFactory.create({
+            skuId,
+            skuCode: item.skuCode,
+            png: item.url,
+            partnerId
+          });
+          media.create();
+        }
       }
-
       saveData.push(media);
     }
 

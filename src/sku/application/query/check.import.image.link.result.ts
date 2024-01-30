@@ -10,7 +10,8 @@ export class CheckImportImageLinkResult implements IQueryResult {
     id: number;
     skuId: number;
     skuCode: string;
-    url: string;
+    png?: string;
+    jpeg?: string;
     partner: string;
   }>[];
   readonly error: Readonly<{

@@ -5,7 +5,6 @@ export type SkuImageLinkEssentialProperties = Readonly<
   Required<{
     skuId: number;
     skuCode: string;
-    url: string;
 
     common: CommonEntity;
   }>
@@ -15,6 +14,8 @@ export type SkuImageLinkOptionalProperties = Readonly<
   Partial<{
     id: number;
     partnerId: number;
+    png: string;
+    jpeg: string;
   }>
 >;
 

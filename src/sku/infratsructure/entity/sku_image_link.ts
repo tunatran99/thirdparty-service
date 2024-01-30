@@ -1,10 +1,13 @@
 import { BaseEntity, CommonEntity } from 'libs/base.entity';
 import { Column, Entity, Index } from 'typeorm';
 
-@Entity({ name: 'pop_sku_image_link', synchronize: false })
+@Entity({ name: 'a3p_sku_image_link', synchronize: false })
 export class SkuImageLinkEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 4000 })
-  url: string;
+  png?: string;
+
+  @Column({ type: 'varchar', length: 4000 })
+  jpeg?: string;
   
   @Column()
   @Index()

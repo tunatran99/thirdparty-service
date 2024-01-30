@@ -8,4 +8,8 @@ export class CheckImportImageDTO {
   @IsOptional()
   @IsString()
   readonly partner: string;
+
+  @IsOptional()
+  @IsString()
+  readonly type: string;
 }

@@ -6,8 +6,9 @@ import { ISkuImageLink, SkuImageLinkImplement, SkuImageLinkProperties } from './
 type createSkuImageLinkOptions = Readonly<{
   skuId: number;
   skuCode: string;
-  url: string;
   partnerId: number;
+  png?: string;
+  jpeg?: string;
 }>;
 
 export class SkuImageLinkFactory {

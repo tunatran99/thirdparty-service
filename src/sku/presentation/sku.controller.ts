@@ -158,7 +158,7 @@ export class SkuController {
 
   @Post('import/image-link/check')
   async CheckImportImageLink(@Body() body: CheckImportImageDTO): Promise<CheckImportImageLinkResult> {
-    const q = new CheckImportImageLink(body.sku, body.partner);
+    const q = new CheckImportImageLink(body.sku, body.partner, body.type);
     return await this.queryBus.execute(q);
   }
   @Post('import/image-link')

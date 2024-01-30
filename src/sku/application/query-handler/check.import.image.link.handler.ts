@@ -9,7 +9,7 @@ export class CheckImportImageLinkHandler implements IQueryHandler<CheckImportIma
   @Inject()
   private readonly skuPricesQuery: SkuPricesQueryImplement;
 
-  async execute({ sku, partner }: CheckImportImageLink): Promise<CheckImportImageLinkResult> {
-    return await this.skuPricesQuery.checkImportImageLink(sku, partner);
+  async execute({ sku, partner, type }: CheckImportImageLink): Promise<CheckImportImageLinkResult> {
+    return await this.skuPricesQuery.checkImportImageLink(sku, partner, type);
   }
 }

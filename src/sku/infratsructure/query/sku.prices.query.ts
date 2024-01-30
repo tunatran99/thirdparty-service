@@ -40,6 +40,6 @@ export interface SkuPricesQuery {
   findCates: (refId?: string[]) => Promise<any>;
   findThirdPartyCates: (refId?: string) => Promise<any>;
   findCateByCode: (code: string) => Promise<any>;
-  checkImportImageLink: (sku: string, partner: string) => Promise<CheckImportImageLinkResult>;
+  checkImportImageLink: (sku: string, partner: string, type?: string) => Promise<CheckImportImageLinkResult>;
   findSkuPricesDetail: (partnerId: number, sku: string) => Promise<FindSkuPricesDetailResult>;
 }

@@ -182,7 +182,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       );
       if (partner.name.toLocaleLowerCase() === "shopeefood") {
         sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
-        .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
+          .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
       }
       !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
@@ -208,7 +208,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       );
       if (partner.name.toLocaleLowerCase() === "shopeefood") {
         sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
-        .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
+          .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
       }
       !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
@@ -234,7 +234,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       );
       if (partner.name.toLocaleLowerCase() === "shopeefood") {
         sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
-        .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
+          .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
       }
       !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
@@ -260,7 +260,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       );
       if (partner.name.toLocaleLowerCase() === "shopeefood") {
         sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
-        .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
+          .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
       }
       !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
@@ -291,7 +291,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       );
       if (partner.name.toLocaleLowerCase() === "shopeefood") {
         sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
-        .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
+          .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
       }
       !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
@@ -305,7 +305,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       )
       if (partner.name.toLocaleLowerCase() === "shopeefood") {
         sql = sql.addSelect('ANY_VALUE(t3.SPF_DISH_ID) as "SPF_DISH_ID"')
-        .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
+          .addSelect('ANY_VALUE(t4.CATEGORY_NAME) as "CATEGORY_NAME"')
       }
     }
     if (hasPromo) {
@@ -494,8 +494,8 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     return item.id;
   }
 
-  async checkImportImageLink(sku: string, partner: string): Promise<CheckImportImageLinkResult> {
-    const data = await readConnection
+  async checkImportImageLink(sku: string, partner: string, type?: string): Promise<CheckImportImageLinkResult> {
+    let sql = readConnection
       .getRepository(SkuEntity)
       .createQueryBuilder('t1')
       .select(
@@ -503,19 +503,20 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     t1.SKU_ID as "skuId",
     t1.SKU_CODE as "skuCode",
     t2.id as id,
-    t2.url as url,
+    t2.jpeg as jpeg,
+    t2.png as png,
     t3.name as partner
     `,
       )
-      .leftJoin('pop_sku_image_link', 't2', 't1.SKU_ID = t2.skuId')
+      .leftJoin('a3p_sku_image_link', 't2', 't1.SKU_ID = t2.skuId')
       .leftJoin('ps_partner', 't3', 't2.partnerId = t3.id')
-      .where('t1.SKU_CODE = :sku', { sku })
-      .getRawMany();
+      .where('t1.SKU_CODE = :sku', { sku });
 
+    const data = await sql.getRawMany();
     const create = [];
     const update = [];
     const error = [];
-    let count = 0;
+    let countPNG = 0, countJPG = 0;
     // let found = false;
     if (data) {
       for (const item of data) {
@@ -523,22 +524,37 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         // found = true;
         item.id = Number.parseInt(item.id);
         item.skuId = Number.parseInt(item.skuId);
-        if (item.url) {
-          console.log('db', item.partner)
-          console.log('client', partner)
-          if (item.partner.toLowerCase() === partner.toLowerCase()) {
-            update.push({
-              id: item.id,
-              skuId: item.skuId,
-              skuCode: item.skuCode,
-              url: item.url,
-              partner
-            });
+        if (item.partner) {
+          if (type === 'jpeg') {
+            if (item.partner.toLowerCase() === partner.toLowerCase()) {
+              update.push({
+                id: item.id,
+                skuId: item.skuId,
+                skuCode: item.skuCode,
+                jpeg: item.jpeg,
+                partner
+              });
+            }
+            else {
+              countJPG++;
+            }
           }
-          else {
-            count++;
+          if (type === 'png') {
+            if (item.partner.toLowerCase() === partner.toLowerCase()) {
+              update.push({
+                id: item.id,
+                skuId: item.skuId,
+                skuCode: item.skuCode,
+                png: item.png,
+                partner
+              });
+            }
+            else {
+              countPNG++;
+            }
           }
-        } else {
+        }
+        else {
           create.push({
             skuId: item.skuId,
             skuCode: item.skuCode,
@@ -547,7 +563,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         }
         // }
       }
-      if (count === data.length) {
+      if (countPNG === data.length || countJPG === data.length) {
         create.push({
           skuId: Number.parseInt(data[0].skuId),
           skuCode: sku,
@@ -560,7 +576,6 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         skuCode: sku,
       });
     }
-
 
     return {
       create,
