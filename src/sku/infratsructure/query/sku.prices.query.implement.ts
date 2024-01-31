@@ -14,6 +14,8 @@ import { CategoryEntity } from 'src/bookingapp/infratsructure/entity/category';
 import { DivisionEntity } from 'src/bookingapp/infratsructure/entity/division';
 import { MBPriceEntity } from '../entity/mb_price';
 import { CheckImportImageLinkResult } from 'src/sku/application/query/check.import.image.link.result';
+import { FindSkuImagesByPartnerResult } from 'src/sku/application/query/find.sku.images.bypartner.result';
+import { SkuImageLinkEntity } from '../entity/sku_image_link';
 
 export class SkuPricesQueryImplement implements SkuPricesQuery {
   async findPricesByCodes(codes: string[], partnerId: number): Promise<MBPriceEntity[]> {
@@ -350,6 +352,47 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     };
   }
 
+  async findSkuImageByPartner(
+    offset: number,
+    limit: number,
+    partnerId: number,
+    search?: string
+  ): Promise<FindSkuImagesByPartnerResult> {
+    let sql = readConnection
+      .getRepository(SkuEntity)
+      .createQueryBuilder('t1')
+      .offset(offset)
+      .limit(limit)
+      .select(
+        `
+        t1.SKU_ID as id,
+        t1.SKU_CODE as sku,
+        t2.png as png,
+        t2.jpeg as jpg
+        `,
+      )
+      .leftJoin('a3p_sku_image_link', 't2', 't1.SKU_ID = t2.skuId')
+    .where('t2.partnerId = :partnerId', { partnerId });
+    if (search) {
+      sql = sql.andWhere(
+        new Brackets((qb) => {
+          qb.where('t1.SKU_CODE like :search', { search: `%${search}%` });
+          qb.orWhere('t1.POP2_DESC_VNM like :search', {
+            search: `%${search}%`,
+          });
+          qb.orWhere('t1.ITEM_DESC_VNM like :search', {
+            search: `%${search}%`,
+          });
+        }),
+      );
+    }
+    const items = await sql.getRawMany();
+    return {
+      items,
+      total: await sql.getCount(),
+    };
+  }
+
   async findPartners(partnerId?: string[]): Promise<PartnerEntity[]> {
     let partnerSql = readConnection.getRepository(PartnerEntity).createQueryBuilder('t1');
     if (partnerId) {
@@ -525,7 +568,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         item.id = Number.parseInt(item.id);
         item.skuId = Number.parseInt(item.skuId);
         if (item.partner) {
-          if (type === 'jpeg') {
+          if (type === 'jpg') {
             if (item.partner.toLowerCase() === partner.toLowerCase()) {
               update.push({
                 id: item.id,

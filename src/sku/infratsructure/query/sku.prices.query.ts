@@ -1,5 +1,6 @@
 import { PartnerEntity } from 'src/partner/infratsructure/entity/partner';
 import { FindSkuPricesByPartnerResult } from 'src/sku/application/query/find.sku.prices.bypartner.result';
+import { FindSkuImagesByPartnerResult } from 'src/sku/application/query/find.sku.images.bypartner.result';
 import { FindSkuPricesDetailResult } from 'src/sku/application/query/find.sku.prices.detail.result';
 import { PriceEntity } from '../entity/price';
 import { StoreEntity } from '../entity/store';
@@ -31,6 +32,12 @@ export interface SkuPricesQuery {
     fromDate?: string,
     toDate?: string
   ) => Promise<FindSkuPricesByPartnerResult>;
+  findSkuImageByPartner: (
+    offset: number,
+    limit: number,
+    partnerId: number,
+    search?: string
+  ) => Promise<FindSkuImagesByPartnerResult>;
   findPartners: (partnerId?: string[]) => Promise<PartnerEntity[]>;
   findLines: (partnerId?: number) => Promise<any>;
   findStores: (refId?: number, storeId?: string[]) => Promise<any>;

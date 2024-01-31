@@ -25,7 +25,7 @@ export class ImportImageLinkHandler implements ICommandHandler<ImportImageLink, 
       let media: ISkuImageLink;
       if (item.type === 'update') {
         const { model } = await this.skuImageLinkRepo.findByCode(item.skuCode, partnerId);
-        if (item.fileType === 'jpeg') {
+        if (item.fileType === 'jpg') {
           model.update({
             jpeg: item.url
           });
@@ -37,7 +37,7 @@ export class ImportImageLinkHandler implements ICommandHandler<ImportImageLink, 
         }
         media = model;
       } else {
-        if (item.fileType === 'jpeg') {
+        if (item.fileType === 'jpg') {
           media = this.skuImageLinkFactory.create({
             skuId,
             skuCode: item.skuCode,

@@ -20,6 +20,7 @@ import { ImportImageLinkHandler } from './application/command-handler/import.ima
 import { CheckImportImageLinkHandler } from './application/query-handler/check.import.image.link.handler';
 import { SkuImageLinkRepositoryImplement } from './infratsructure/repository/sku.image.link.repository.implement';
 import { SkuImageLinkFactory } from './domain/sku.image.link.factory';
+import { FindSkuImagesByPartnerQueryHandler } from './application/query-handler/find.sku.images.bypartner.handler';
 
 const infrastructure = [SkuPricesQueryImplement, PartnerPricesRepositoryImplement, PriceServiceRepositoryImplement, SkuImageLinkRepositoryImplement];
 
@@ -41,7 +42,8 @@ const application = [
   FindCategoryHandler,
   FindThirdpartyCategoryHandler,
   CheckImportImageLinkHandler,
-  ImportImageLinkHandler
+  ImportImageLinkHandler,
+  FindSkuImagesByPartnerQueryHandler
 ];
 
 const domain = [PriceService, SkuImageLinkFactory];

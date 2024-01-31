@@ -23,6 +23,8 @@ import { CheckImportImageLink } from '../application/query/check.import.image.li
 import { CheckImportImageLinkResult } from '../application/query/check.import.image.link.result';
 import { CheckImportImageDTO } from './dto/check.import.image.query.dto';
 import { SaveImageLinkRequestDTO } from './dto/save.image.link.request.dto';
+import { FindSkuImagesByPartnerQuery } from '../application/query/find.sku.images.bypartner.query';
+import { FindSkuImageByPartnerRequestDTO } from './dto/find.sku.image.bypartner.request.dto';
 
 @Controller('sku')
 export class SkuController {
@@ -165,5 +167,9 @@ export class SkuController {
   async ImportImageLink(@Body() body: SaveImageLinkRequestDTO[]): Promise<void> {
     const command = new ImportImageLink(body);
     await this.commandBus.execute(command);
+  }
+  @Get('listskubypartner/image')
+  async listImageOfSkuByPartner(@Query() query: FindSkuImageByPartnerRequestDTO) {
+    return await this.queryBus.execute(new FindSkuImagesByPartnerQuery(query));
   }
 }
