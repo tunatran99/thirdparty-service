@@ -40,6 +40,7 @@ import { MBPriceEntity } from 'src/sku/infratsructure/entity/mb_price';
 import { RoleEntity } from 'src/role/infratsructure/entity/role';
 import { PermissionEntity } from 'src/role/infratsructure/entity/permission';
 import { SkuImageLinkEntity } from 'src/sku/infratsructure/entity/sku_image_link';
+import { SkuImageLinkOldEntity } from 'src/sku/infratsructure/entity/sku_image_link_old';
 
 interface WriteConnection {
   readonly startTransaction: (
@@ -99,7 +100,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       MBPriceEntity,
       RoleEntity,
       PermissionEntity,
-      SkuImageLinkEntity
+      SkuImageLinkEntity,
+      SkuImageLinkOldEntity
     ], // Khai báo entity tương ứng với table trong database
     charset: 'utf8mb4_unicode_ci',
     host: environment.DB_HOST,

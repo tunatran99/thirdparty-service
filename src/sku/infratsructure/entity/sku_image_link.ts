@@ -1,13 +1,31 @@
 import { BaseEntity, CommonEntity } from 'libs/base.entity';
 import { Column, Entity, Index } from 'typeorm';
 
-@Entity({ name: 'a3p_sku_image_link', synchronize: false })
+@Entity({ name: 'sku_image_link', synchronize: false })
 export class SkuImageLinkEntity extends BaseEntity {
-  @Column({ type: 'varchar', length: 4000 })
-  png?: string;
+  @Column({ type: 'text' })
+  pop_url_1?: string;
 
-  @Column({ type: 'varchar', length: 4000 })
-  jpeg?: string;
+  @Column({ type: 'text' })
+  pop_url_2?: string;
+
+  @Column({ type: 'text' })
+  pop_url_3?: string;
+
+  @Column({ type: 'text' })
+  a3p_url_1?: string;
+
+  @Column({ type: 'text' })
+  a3p_url_2?: string;
+
+  @Column({ type: 'text' })
+  a3p_url_3?: string;
+
+  @Column({ type: 'text' })
+  a3p_url_4?: string;
+
+  @Column({ type: 'text' })
+  a3p_url_5?: string;
   
   @Column()
   @Index()
@@ -18,14 +36,11 @@ export class SkuImageLinkEntity extends BaseEntity {
   skuCode: string;
 
   @Column()
+  active?: number;
+
+  @Column()
   partnerId?: number;
 
   @Column(() => CommonEntity, { prefix: false })
   common: CommonEntity;
-
-  // @OneToOne(() => ProjectAppliedSkuEntity, (s) => s.SKU_IMAGE, {
-  //   eager: false,
-  //   cascade: ['insert', 'update'],
-  // })
-  // PROJECT_APPLIED_SKU?: ProjectAppliedSkuEntity;
 }

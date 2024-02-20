@@ -68,10 +68,10 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     partnerId: number,
     search?: string,
     storeId?: string[],
-    lineId?: string,
-    groupId?: string,
-    deptId?: string,
-    cateId?: string,
+    lineId?: string[],
+    groupId?: string[],
+    deptId?: string[],
+    cateId?: string[],
     hasPromo?: string,
     status?: number,
     isExporting?: boolean,
@@ -189,7 +189,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
     if (lineId) {
-      sql = sql.andWhere('t2.line = :lineId', { lineId });
+      sql = sql.andWhere('t2.line in (:...lineId)', { lineId });
     } else {
       sql = sql.select(
         `
@@ -215,7 +215,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
     if (groupId) {
-      sql = sql.andWhere('t2.group = :groupId', { groupId });
+      sql = sql.andWhere('t2.group in (:...groupId)', { groupId });
     } else {
       sql = sql.select(
         `
@@ -241,7 +241,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       !isExporting && (sql = sql.groupBy('t1.SKU_CODE'));
     }
     if (deptId) {
-      sql = sql.andWhere('t2.dept = :deptId', { deptId });
+      sql = sql.andWhere('t2.dept in (:...deptId)', { deptId });
     } else {
       sql = sql.select(
         `
@@ -268,11 +268,16 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     }
     if (cateId) {
       if (partner.name.toLocaleLowerCase() === "shopeefood") {
-        let id = await this.findCateByCode(cateId);
-        sql = sql.andWhere('t3.CATEGORY_ID = :id', { id });
+        let listCateId = [];
+        for(const code of cateId) {
+          const id = await this.findCateByCode(code);
+          listCateId.push(id);
+        }
+        // let id = await this.findCateByCode(cateId);
+        sql = sql.andWhere('t3.CATEGORY_ID in (:...listCateId)', { listCateId });
       }
       else
-        sql = sql.andWhere('t2.category = :cateId', { cateId });
+        sql = sql.andWhere('t2.category in (:...cateId)', { cateId });
     } else {
       sql = sql.select(
         `
@@ -357,7 +362,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     limit: number,
     partnerId: number,
     search?: string
-  ): Promise<FindSkuImagesByPartnerResult> {
+  ): Promise<any> {
     let sql = readConnection
       .getRepository(SkuEntity)
       .createQueryBuilder('t1')
@@ -367,12 +372,15 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         `
         t1.SKU_ID as id,
         t1.SKU_CODE as sku,
-        t2.png as png,
-        t2.jpeg as jpg
+        t2.a3p_url_1 as a3p_url_1,
+        t2.a3p_url_2 as a3p_url_2,
+        t2.a3p_url_3 as a3p_url_3,
+        t2.a3p_url_4 as a3p_url_4,
+        t2.a3p_url_5 as a3p_url_5
         `,
       )
-      .leftJoin('a3p_sku_image_link', 't2', 't1.SKU_ID = t2.skuId')
-    .where('t2.partnerId = :partnerId', { partnerId });
+      .leftJoin('sku_image_link', 't2', 't1.SKU_ID = t2.skuId')
+      .where('t2.partnerId = :partnerId', { partnerId });
     if (search) {
       sql = sql.andWhere(
         new Brackets((qb) => {
@@ -510,7 +518,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     const [items] = await Promise.all([sql.getRawMany()]);
     return items;
   }
-  async findThirdPartyCates(refId?: string): Promise<any> {
+  async findThirdPartyCates(refId?: string[]): Promise<any> {
     let sql = readConnection.getRepository(ThirdpartyCategoryEntity)
       .createQueryBuilder('t1')
       .innerJoin('spf_menu', 't2', 't1.id = t2.CATEGORY_ID')
@@ -520,8 +528,9 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     t1.CATEGORY_NAME
     `,
       )
+      .where('t1.id > 130');
     if (refId) {
-      sql = sql.where('t2.STORE = :refId', { refId });
+      sql = sql.andWhere('t2.STORE in (:...refId)', { refId });
     }
 
     const [items] = await Promise.all([sql.getRawMany()]);
@@ -546,12 +555,15 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     t1.SKU_ID as "skuId",
     t1.SKU_CODE as "skuCode",
     t2.id as id,
-    t2.jpeg as jpeg,
-    t2.png as png,
+    t2.a3p_url_1 as a3p_url_1,
+    t2.a3p_url_2 as a3p_url_2,
+    t2.a3p_url_3 as a3p_url_3,
+    t2.a3p_url_4 as a3p_url_4,
+    t2.a3p_url_5 as a3p_url_5,
     t3.name as partner
     `,
       )
-      .leftJoin('a3p_sku_image_link', 't2', 't1.SKU_ID = t2.skuId')
+      .leftJoin('sku_image_link', 't2', 't1.SKU_ID = t2.skuId')
       .leftJoin('ps_partner', 't3', 't2.partnerId = t3.id')
       .where('t1.SKU_CODE = :sku', { sku });
 
@@ -559,7 +571,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
     const create = [];
     const update = [];
     const error = [];
-    let countPNG = 0, countJPG = 0;
+    let count = 0;
     // let found = false;
     if (data) {
       for (const item of data) {
@@ -568,33 +580,21 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         item.id = Number.parseInt(item.id);
         item.skuId = Number.parseInt(item.skuId);
         if (item.partner) {
-          if (type === 'jpg') {
-            if (item.partner.toLowerCase() === partner.toLowerCase()) {
-              update.push({
-                id: item.id,
-                skuId: item.skuId,
-                skuCode: item.skuCode,
-                jpeg: item.jpeg,
-                partner
-              });
-            }
-            else {
-              countJPG++;
-            }
+          if (item.partner.toLowerCase() === partner.toLowerCase()) {
+            update.push({
+              id: item.id,
+              skuId: item.skuId,
+              skuCode: item.skuCode,
+              a3p_url_1: item.a3p_url_1,
+              a3p_url_2: item.a3p_url_2,
+              a3p_url_3: item.a3p_url_3,
+              a3p_url_4: item.a3p_url_4,
+              a3p_url_5: item.a3p_url_5,
+              partner
+            });
           }
-          if (type === 'png') {
-            if (item.partner.toLowerCase() === partner.toLowerCase()) {
-              update.push({
-                id: item.id,
-                skuId: item.skuId,
-                skuCode: item.skuCode,
-                png: item.png,
-                partner
-              });
-            }
-            else {
-              countPNG++;
-            }
+          else {
+            count++;
           }
         }
         else {
@@ -606,7 +606,7 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
         }
         // }
       }
-      if (countPNG === data.length || countJPG === data.length) {
+      if (count === data.length) {
         create.push({
           skuId: Number.parseInt(data[0].skuId),
           skuCode: sku,
@@ -734,5 +734,16 @@ export class SkuPricesQueryImplement implements SkuPricesQuery {
       }
     });
     return skuEntity;
+  }
+
+  async findActiveImage(partnerId: number, skuId: number) {
+    const result = await readConnection
+      .getRepository(SkuImageLinkEntity)
+      .createQueryBuilder('t1')
+      .select('t1.active', 'active')
+      .where('t1.partnerId = :partnerId and t1.skuId = :skuId', { partnerId, skuId })
+      .getRawOne();
+    if(result) return result.active;
+    return null;
   }
 }

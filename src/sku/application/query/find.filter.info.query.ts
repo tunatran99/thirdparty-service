@@ -22,5 +22,5 @@ export class FindCategory implements IQuery {
   constructor(readonly refId?: string[]) { }
 }
 export class FindThirdpartyCategory implements IQuery {
-  constructor(readonly refId?: string) { }
+  constructor(readonly refId?: string[]) { }
 }

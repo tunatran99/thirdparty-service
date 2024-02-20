@@ -21,6 +21,10 @@ import { CheckImportImageLinkHandler } from './application/query-handler/check.i
 import { SkuImageLinkRepositoryImplement } from './infratsructure/repository/sku.image.link.repository.implement';
 import { SkuImageLinkFactory } from './domain/sku.image.link.factory';
 import { FindSkuImagesByPartnerQueryHandler } from './application/query-handler/find.sku.images.bypartner.handler';
+import { ActiveImageHandler } from './application/command-handler/active.image.handler';
+import { ImportImageLinkOldHandler } from './application/command-handler/import.image.link.old.handler';
+import { SkuImageLinkOldFactory } from './domain/sku.image.link_old.factory';
+import { FindActiveImageHandler } from './application/query-handler/find.active.image.handler';
 
 const infrastructure = [SkuPricesQueryImplement, PartnerPricesRepositoryImplement, PriceServiceRepositoryImplement, SkuImageLinkRepositoryImplement];
 
@@ -43,10 +47,13 @@ const application = [
   FindThirdpartyCategoryHandler,
   CheckImportImageLinkHandler,
   ImportImageLinkHandler,
-  FindSkuImagesByPartnerQueryHandler
+  ImportImageLinkOldHandler,
+  FindSkuImagesByPartnerQueryHandler,
+  ActiveImageHandler,
+  FindActiveImageHandler
 ];
 
-const domain = [PriceService, SkuImageLinkFactory];
+const domain = [PriceService, SkuImageLinkFactory, SkuImageLinkOldFactory];
 
 @Module({
   imports: [CqrsModule, LogModule, forwardRef(() => CompareModule)],

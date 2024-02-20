@@ -201,4 +201,88 @@ export class CategoryQueryImplement implements CategoryQuery {
       }
     });
   }
+  async selectStoreTestRecords(id: string): Promise<any> {
+    if (parseInt(id) > 1008) {
+      throw new HttpException({ message: `Không thể truy cập cửa hàng này` }, HttpStatus.BAD_REQUEST)
+    }
+
+    let sql = readConnection
+      .getRepository(MenuEntity)
+      .createQueryBuilder('t1')
+      .select('t1.STORE', 'id')
+      .addSelect('t2.STORE_NAME', 'name')
+      .innerJoin('store', 't2', 't1.STORE = t2.STORE_ID')
+      .addSelect(
+        `json_arrayagg(t1.CATEGORY_ID)`,
+        'cates',
+      )
+      .where(`t1.STORE in (${id})`);
+    const data = await sql.getRawOne();
+
+    if (!data.cates) {
+      throw new HttpException({ message: `Không tồn tại cửa hàng này` }, HttpStatus.BAD_REQUEST)
+    }
+
+    const cates = data.cates.filter((i: any, index: number) => data.cates[index] != data.cates[index + 1])
+
+    const cateData = await this.selectCateTestRecords(cates, id);
+    return {
+      section: {
+        id: data.id,
+        name: data.name + ' menu',
+        serviceHours: {
+          "mon": {
+            "openPeriodType": "OpenPeriod",
+          },
+        },
+        categories: cateData,
+      }
+    };
+  }
+
+  async selectCateTestRecords(cates: string[], store: string): Promise<any> {
+    let sql = readConnection
+      .getRepository(MenuEntity)
+      .createQueryBuilder('t1')
+      .select('t2.CATEGORY_CODE', 'id')
+      .addSelect('t2.CATEGORY_NAME', 'name')
+      .addSelect('t2.ACTIVE', 'availableStatus')
+      .addSelect('t2.SEQUENCE', 'sequence')
+      .leftJoin('thirdparty_category', 't2', 't1.CATEGORY_ID = t2.id')
+      .leftJoin('sku', 't4', 't1.SKU_ID = t4.SKU_ID')
+      .leftJoin('sku_image_link', 't6', 't1.SKU_ID = t6.skuId')
+      .addSelect(
+        `json_arrayagg(
+          json_object(
+            "id", t4.SKU_CODE,
+            "filePath", CASE
+            WHEN t6.active = 1 THEN t6.a3p_url_1
+            WHEN t6.active = 2 THEN t6.a3p_url_2
+            WHEN t6.active = 3 THEN t6.a3p_url_3
+            WHEN t6.active = 4 THEN t6.a3p_url_4
+            WHEN t6.active = 5 THEN t6.a3p_url_5
+            ELSE t6.a3p_url_1
+        END
+          )
+        )`,
+        'items',
+      )
+      .where('t1.CATEGORY_ID in (:...cates) and t1.STORE = :store and t6.partnerId = 7', { cates, store });
+    // console.log(sql.groupBy('t1.CATEGORY_ID').getQuery())
+    const data = await sql.groupBy('t1.CATEGORY_ID').getRawMany();
+    return data.map((i) => {
+      return {
+        id: i.id,
+        sequence: i.sequence,
+        name: i.name,
+        availableStatus: i.availableStatus === 'Y' ? "AVAILABLE" : "UNAVAILABLE",
+        items: i.items.map((k: { id: any; sequence: any; name: any; availableStatus: number; normalPrice: string; description: any; filePath: string | string[]; }) => {
+          return {
+            id: k.id,
+            photos: [k.filePath]
+          }
+        })
+      }
+    });
+  }
 }

@@ -8,6 +8,7 @@ import { CreateCategory } from 'src/shopeefood/application/command/create.catego
 import { FindCategoryQuery } from '../application/query/find.category.query';
 import { SearchDTO } from './dto/common.dto';
 import { CreateDTO } from './dto/create.category.dto';
+import { FindCategoryByCodesTestQuery } from '../application/query/find.category.bycodes.test.query';
 
 @Controller('shopeefood')
 export class ShopeefoodController {
@@ -23,6 +24,19 @@ export class ShopeefoodController {
     };
 
     const { section } = await this.queryBus.execute(new FindCategoryByCodesQuery(id));
+    payload.section = section;
+
+    return payload;
+  }
+
+  @Get('merchant/menutest')
+  async getMenuTest(@Query('partnerMerchantID') id: string): Promise<any> {
+    let payload = {
+      "partnerMerchantID": `${id}`,
+      "section": {}
+    };
+
+    const { section } = await this.queryBus.execute(new FindCategoryByCodesTestQuery(id));
     payload.section = section;
 
     return payload;

@@ -24,4 +24,5 @@ export interface PriceServiceRepository {
   findPcByStartdate: (startdate: string) => Promise<PricechangeEntity[]>;
   findPcByEnddate: (enddate: string) => Promise<PricechangeEntity[]>;
   updateAppliedList: (data: any[]) => Promise<void>;
+  activeImage: (data: any) => Promise<void>;
 }

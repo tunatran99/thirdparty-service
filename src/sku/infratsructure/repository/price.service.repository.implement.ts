@@ -11,6 +11,7 @@ import { StoreEntity } from '../entity/store';
 import { MenuEntity } from 'src/shopeefood/infratsructure/entity/menu';
 import { SkuCodeTempEntity } from '../entity/sku_code_temp';
 import { MBPriceEntity } from '../entity/mb_price';
+import { SkuImageLinkEntity } from '../entity/sku_image_link';
 
 export class PriceServiceRepositoryImplement implements PriceServiceRepository {
   async findUom(): Promise<UomEntity[]> {
@@ -24,11 +25,11 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
     // .innerJoin('spf_menu', 't2', 't1.SKU_ID = t2.SKU_ID')
     // .where('t1.SKU_CODE in (:...skus)', { skus }).getQuery());
     return await readConnection.getRepository(SkuEntity).createQueryBuilder('t1')
-    .select('t1.SKU_CODE')
-    .distinct(true)
-    .innerJoin('spf_menu', 't2', 't1.SKU_ID = t2.SKU_ID')
-    .where('t1.SKU_CODE in (:...skus)', { skus })
-    .getMany();
+      .select('t1.SKU_CODE')
+      .distinct(true)
+      .innerJoin('spf_menu', 't2', 't1.SKU_ID = t2.SKU_ID')
+      .where('t1.SKU_CODE in (:...skus)', { skus })
+      .getMany();
     // return null;
   }
 
@@ -74,7 +75,7 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
       .where('t1.SKU_CODE = :sku', { sku })
       .getOne();
 
-      return foundSku.CATEGORY_ID;
+    return foundSku.CATEGORY_ID;
   }
 
   async findPcByStartdate(startdate: string): Promise<PricechangeEntity[]> {
@@ -151,10 +152,10 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
     if (data[0].partnerId.toLowerCase() === 'shopeefood') {
       for (const item of data) {
         const sku = await readConnection
-        .getRepository(SkuEntity)
-        .createQueryBuilder('t1')
-        .where('t1.SKU_CODE = :code', { code: item.sku })
-        .getOne();
+          .getRepository(SkuEntity)
+          .createQueryBuilder('t1')
+          .where('t1.SKU_CODE = :code', { code: item.sku })
+          .getOne();
         const pros = writeConnection.manager
           .getRepository(MenuEntity)
           .createQueryBuilder()
@@ -181,5 +182,16 @@ export class PriceServiceRepositoryImplement implements PriceServiceRepository {
       }
     }
     await Promise.all(promises);
+  }
+
+  async activeImage(data: any): Promise<void> {
+    await writeConnection.manager
+      .getRepository(SkuImageLinkEntity)
+      .createQueryBuilder()
+      .update()
+      .set({ active: data.active })
+      .where('skuId = :skuId', { skuId: data.skuId })
+      .andWhere('partnerId = :partnerId', { partnerId: data.partnerId })
+      .execute();
   }
 }

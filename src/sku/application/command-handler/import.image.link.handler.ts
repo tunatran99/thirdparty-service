@@ -19,42 +19,25 @@ export class ImportImageLinkHandler implements ICommandHandler<ImportImageLink, 
   async execute({ body }: ImportImageLink): Promise<void> {
     const saveData = [] as ISkuImageLink[];
     for (const item of body) {
+      const { a3p_url_1, a3p_url_2, a3p_url_3, a3p_url_4, a3p_url_5 } = item;
       const skuId = await this.skuPricesQuery.findIdByCode(item.skuCode);
       const partnerId = await this.skuPricesQuery.findIdByName(item.partner.toLowerCase());
 
       let media: ISkuImageLink;
       if (item.type === 'update') {
         const { model } = await this.skuImageLinkRepo.findByCode(item.skuCode, partnerId);
-        if (item.fileType === 'jpg') {
-          model.update({
-            jpeg: item.url
-          });
-        }
-        if (item.fileType === 'png') {
-          model.update({
-            png: item.url
-          });
-        }
+        model.update({
+          a3p_url_1, a3p_url_2, a3p_url_3, a3p_url_4, a3p_url_5
+        });
         media = model;
       } else {
-        if (item.fileType === 'jpg') {
-          media = this.skuImageLinkFactory.create({
-            skuId,
-            skuCode: item.skuCode,
-            jpeg: item.url,
-            partnerId
-          });
-          media.create();
-        }
-        if (item.fileType === 'png') {
-          media = this.skuImageLinkFactory.create({
-            skuId,
-            skuCode: item.skuCode,
-            png: item.url,
-            partnerId
-          });
-          media.create();
-        }
+        media = this.skuImageLinkFactory.create({
+          skuId,
+          skuCode: item.skuCode,
+          a3p_url_1, a3p_url_2, a3p_url_3, a3p_url_4, a3p_url_5,
+          partnerId
+        });
+        media.create();
       }
       saveData.push(media);
     }

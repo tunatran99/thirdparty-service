@@ -6,10 +6,10 @@ export class FindSkuPricesByPartnerQuery implements IQuery {
   public readonly limit?: number;
   public readonly partnerId: number;
   public readonly storeId?: string[];
-  public readonly lineId?: string;
-  public readonly groupId?: string;
-  public readonly deptId?: string;
-  public readonly cateId?: string;
+  public readonly lineId?: string[];
+  public readonly groupId?: string[];
+  public readonly deptId?: string[];
+  public readonly cateId?: string[];
   public readonly hasPromo?: string;
   public readonly status?: number;
   public readonly export?: boolean;

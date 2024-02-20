@@ -11,10 +11,11 @@ import { FindCategoryHandler } from 'src/sku/application/query-handler/find.filt
 import { FindCategoryQueryHandler } from './application/query-handler/find.category.handler';
 import { DataFactory } from './domain/data.factory';
 import { CategoryFactory } from './domain/category.factory';
+import { FindCategoryByCodesTestQueryHandler } from './application/query-handler/find.category.bycodes.test.handler';
 
 const infrastructure = [CategoryQueryImplement, DataRepositoryImplement, CategoryRepositoryImplement];
 
-const application = [FindCategoryByCodesQueryHandler, CreateDataHandler, CreateCategoryHandler, FindCategoryQueryHandler];
+const application = [FindCategoryByCodesQueryHandler, CreateDataHandler, CreateCategoryHandler, FindCategoryQueryHandler, FindCategoryByCodesTestQueryHandler];
 
 const domain = [DataFactory, CategoryFactory];
 

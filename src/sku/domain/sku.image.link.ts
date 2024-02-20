@@ -14,8 +14,15 @@ export type SkuImageLinkOptionalProperties = Readonly<
   Partial<{
     id: number;
     partnerId: number;
-    png: string;
-    jpeg: string;
+    pop_url_1: string;
+    pop_url_2: string;
+    pop_url_3: string;
+    a3p_url_1: string;
+    a3p_url_2: string;
+    a3p_url_3: string;
+    a3p_url_4: string;
+    a3p_url_5: string;
+    active: number;
   }>
 >;
 

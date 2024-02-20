@@ -22,10 +22,10 @@ export interface SkuPricesQuery {
     partnerId: number,
     search?: string,
     storeId?: string[],
-    lineId?: string,
-    groupId?: string,
-    deptId?: string,
-    cateId?: string,
+    lineId?: string[],
+    groupId?: string[],
+    deptId?: string[],
+    cateId?: string[],
     hasPromo?: string,
     status?: number,
     isExporting?: boolean,
@@ -45,8 +45,9 @@ export interface SkuPricesQuery {
   findGroups: (refId?: string[]) => Promise<any>;
   findDepts: (refId?: string[]) => Promise<any>;
   findCates: (refId?: string[]) => Promise<any>;
-  findThirdPartyCates: (refId?: string) => Promise<any>;
+  findThirdPartyCates: (refId?: string[]) => Promise<any>;
   findCateByCode: (code: string) => Promise<any>;
   checkImportImageLink: (sku: string, partner: string, type?: string) => Promise<CheckImportImageLinkResult>;
   findSkuPricesDetail: (partnerId: number, sku: string) => Promise<FindSkuPricesDetailResult>;
+  findActiveImage: (partnerId: number, skuId: number) => Promise<any>;
 }

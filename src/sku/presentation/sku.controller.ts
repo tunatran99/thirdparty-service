@@ -25,6 +25,10 @@ import { CheckImportImageDTO } from './dto/check.import.image.query.dto';
 import { SaveImageLinkRequestDTO } from './dto/save.image.link.request.dto';
 import { FindSkuImagesByPartnerQuery } from '../application/query/find.sku.images.bypartner.query';
 import { FindSkuImageByPartnerRequestDTO } from './dto/find.sku.image.bypartner.request.dto';
+import { ActiveImageRequestDTO } from './dto/active.image.request.dto';
+import { ActiveImage } from '../application/command/active.image';
+import { FindActiveImageQuery } from '../application/query/find.active.image.query';
+import { FindActiveImageRequestDTO } from './dto/find.active.image.request.dto';
 
 @Controller('sku')
 export class SkuController {
@@ -139,7 +143,7 @@ export class SkuController {
 
   @UseGuards(JwtAuthenticationGuard)
   @Get('getthirdcates')
-  async getThirdCates(@Query('refId') refId?: string) {
+  async getThirdCates(@Query('refId') refId?: string[]) {
     return await this.queryBus.execute(new FindThirdpartyCategory(refId));
   }
 
@@ -171,5 +175,14 @@ export class SkuController {
   @Get('listskubypartner/image')
   async listImageOfSkuByPartner(@Query() query: FindSkuImageByPartnerRequestDTO) {
     return await this.queryBus.execute(new FindSkuImagesByPartnerQuery(query));
+  }
+  @Get('image/active')
+  async GetActiveImage(@Query() query: FindActiveImageRequestDTO): Promise<void> {
+    return await this.queryBus.execute(new FindActiveImageQuery(query.partnerId, query.skuId));
+  }
+  @Post('image/active')
+  async ActiveImage(@Body() body: ActiveImageRequestDTO): Promise<void> {
+    const command = new ActiveImage(body);
+    return await this.commandBus.execute(command);
   }
 }
